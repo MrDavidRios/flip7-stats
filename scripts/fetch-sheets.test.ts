@@ -29,21 +29,21 @@ function mockSheetsClient(tabs: Record<string, unknown[][]>): SheetsClient {
 }
 
 describe("parseTabData", () => {
-  it("handles simple format: headers in row 1, data in row 2+", () => {
+  it("generates standardized headers from simple format", () => {
     const result = parseTabData([
       ["Name", "Total", "", ""],
       ["Diego", "209", "0", "0"],
       ["Olivia", "175", "23", "29"],
     ]);
 
-    expect(result.headers).toEqual(["Name", "Total", "", ""]);
+    expect(result.headers).toEqual(["Player", "Total", "Round 1", "Round 2"]);
     expect(result.rows).toEqual([
       ["Diego", "209", "0", "0"],
       ["Olivia", "175", "23", "29"],
     ]);
   });
 
-  it("handles merged header row: skips it and uses row 2 as headers", () => {
+  it("generates standardized headers from merged header format", () => {
     const result = parseTabData([
       ["", "", "Round", "", "", ""],
       ["Player", "Total", "1", "2", "3", "4"],
@@ -51,7 +51,9 @@ describe("parseTabData", () => {
       ["Gabe", "98", "35", "32", "11", "20"],
     ]);
 
-    expect(result.headers).toEqual(["Player", "Total", "1", "2", "3", "4"]);
+    expect(result.headers).toEqual([
+      "Player", "Total", "Round 1", "Round 2", "Round 3", "Round 4",
+    ]);
     expect(result.rows).toEqual([
       ["Abby", "178", "35", "24", "34", ""],
       ["Gabe", "98", "35", "32", "11", "20"],
@@ -68,7 +70,9 @@ describe("parseTabData", () => {
       ["Bob", "30", "15", "15", ""],
     ]);
 
-    expect(result.headers).toEqual(["Alice", "50", "10", "20", "20"]);
+    expect(result.headers).toEqual([
+      "Player", "Total", "Round 1", "Round 2", "Round 3",
+    ]);
     expect(result.rows).toEqual([
       ["Alice", "50", "10", "20", "20"],
       ["Bob", "30", "15", "15", ""],
@@ -84,11 +88,16 @@ describe("parseTabData", () => {
     expect(result.rows[0]).toEqual(["John", "37", "", ""]);
   });
 
-  it("handles headers-only with no data rows", () => {
-    const result = parseTabData([["Player", "Score"]]);
+  it("determines column count from the widest data row", () => {
+    const result = parseTabData([
+      ["Name", "Total"],
+      ["Alice", "10", "5"],
+      ["Bob", "20", "8", "12"],
+    ]);
 
-    expect(result.headers).toEqual(["Player", "Score"]);
-    expect(result.rows).toEqual([]);
+    expect(result.headers).toEqual([
+      "Player", "Total", "Round 1", "Round 2",
+    ]);
   });
 
   it("skips multiple non-data rows above the header", () => {
@@ -99,8 +108,18 @@ describe("parseTabData", () => {
       ["Alice", "100", "50", "50"],
     ]);
 
-    expect(result.headers).toEqual(["Player", "Total", "1", "2"]);
+    expect(result.headers).toEqual(["Player", "Total", "Round 1", "Round 2"]);
     expect(result.rows).toEqual([["Alice", "100", "50", "50"]]);
+  });
+
+  it("handles a sheet with only two columns (player + total)", () => {
+    const result = parseTabData([
+      ["Name", "Score"],
+      ["Alice", "50"],
+    ]);
+
+    expect(result.headers).toEqual(["Player", "Total"]);
+    expect(result.rows).toEqual([["Alice", "50"]]);
   });
 });
 
@@ -204,7 +223,9 @@ describe("fetchAllSheets", () => {
   it("quotes tab names in the range parameter", async () => {
     const valuesGet = vi
       .fn()
-      .mockResolvedValue({ data: { values: [["Name", "Total"], ["A", "1"]] } });
+      .mockResolvedValue({
+        data: { values: [["Name", "Total"], ["A", "1"]] },
+      });
 
     const client: SheetsClient = {
       spreadsheets: {

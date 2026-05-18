@@ -50,26 +50,37 @@ function isNumeric(value: unknown): boolean {
 export function parseTabData(values: unknown[][]): TabData {
   if (values.length === 0) return { headers: [], rows: [] };
 
+  let dataStartIndex = -1;
   for (let i = 0; i < values.length; i++) {
     const row = values[i];
     const colA = String(row[0] ?? "").trim();
     const colB = String(row[1] ?? "").trim();
 
     if (colA !== "" && !isNumeric(colA) && isNumeric(colB)) {
-      const headerRow = i > 0 ? values[i - 1] : values[i];
-      const headers = (headerRow as string[]).map((h) => String(h ?? ""));
-      const rows = values.slice(i).map((r) =>
-        (r as string[]).map((c) => String(c ?? ""))
-      );
-      return { headers, rows };
+      dataStartIndex = i;
+      break;
     }
   }
 
-  const [headers, ...rows] = values;
-  return {
-    headers: (headers as string[]).map((h) => String(h ?? "")),
-    rows: rows.map((r) => (r as string[]).map((c) => String(c ?? ""))),
-  };
+  if (dataStartIndex === -1) {
+    const [first, ...rest] = values;
+    return {
+      headers: (first as string[]).map((h) => String(h ?? "")),
+      rows: rest.map((r) => (r as string[]).map((c) => String(c ?? ""))),
+    };
+  }
+
+  const rows = values.slice(dataStartIndex).map((r) =>
+    (r as string[]).map((c) => String(c ?? ""))
+  );
+
+  const numCols = Math.max(...rows.map((r) => r.length));
+  const headers = ["Player", "Total"];
+  for (let i = 2; i < numCols; i++) {
+    headers.push(`Round ${i - 1}`);
+  }
+
+  return { headers, rows };
 }
 
 export async function fetchAllSheets(
