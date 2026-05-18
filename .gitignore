@@ -25,6 +25,3 @@ dist-ssr
 
 # Generated data (fetched from Google Sheets)
 public/data.json
-
-# Service account key (never commit this)
-service-account-key.json

@@ -30,9 +30,13 @@ jobs:
 
       - run: npm ci
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
       - name: Fetch Google Sheets data
-        env:
-          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
         run: npx tsx scripts/fetch-sheets.ts
 
       - name: Build

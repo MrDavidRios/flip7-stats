@@ -23,18 +23,11 @@ interface SheetData {
 }
 
 async function main() {
-  const credentialsJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
-  if (!credentialsJson) {
-    console.error(
-      "Missing GOOGLE_SERVICE_ACCOUNT_KEY environment variable.\n" +
-        "Set it to the contents of your service account JSON key file."
-    );
-    process.exit(1);
-  }
-
-  const credentials = JSON.parse(credentialsJson);
+  // Uses Application Default Credentials (ADC).
+  // In CI: set automatically by google-github-actions/auth.
+  // Locally: run `gcloud auth application-default login`, or set
+  //   GOOGLE_APPLICATION_CREDENTIALS to a service account key file path.
   const auth = new google.auth.GoogleAuth({
-    credentials,
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   });
 
