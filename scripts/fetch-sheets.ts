@@ -1,4 +1,4 @@
-import { google } from "googleapis";
+import { google, type sheets_v4 } from "googleapis";
 import { readFileSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -6,70 +6,118 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
-interface SheetConfig {
+export interface SpreadsheetConfig {
   id: string;
-  range: string;
   label: string;
 }
 
-interface Config {
-  sheets: SheetConfig[];
+export interface Config {
+  sheets: SpreadsheetConfig[];
 }
 
-interface SheetData {
-  label: string;
+export interface TabData {
   headers: string[];
   rows: string[][];
 }
 
+export interface SpreadsheetData {
+  label: string;
+  games: Record<string, TabData>;
+}
+
+export interface FetchResult {
+  fetchedAt: string;
+  spreadsheets: SpreadsheetData[];
+}
+
+export interface SheetsClient {
+  spreadsheets: {
+    get: (params: { spreadsheetId: string; fields: string }) => Promise<{
+      data: { sheets?: { properties?: { title?: string | null } }[] };
+    }>;
+    values: {
+      get: (params: { spreadsheetId: string; range: string }) => Promise<{
+        data: { values?: unknown[][] };
+      }>;
+    };
+  };
+}
+
+export async function fetchAllSheets(
+  sheetsApi: SheetsClient,
+  config: Config
+): Promise<SpreadsheetData[]> {
+  const results: SpreadsheetData[] = [];
+
+  for (const spreadsheet of config.sheets) {
+    const meta = await sheetsApi.spreadsheets.get({
+      spreadsheetId: spreadsheet.id,
+      fields: "sheets.properties.title",
+    });
+
+    const tabNames =
+      meta.data.sheets
+        ?.map((s) => s.properties?.title)
+        .filter((t): t is string => t != null) ?? [];
+
+    const games: Record<string, TabData> = {};
+
+    for (const tabName of tabNames) {
+      const response = await sheetsApi.spreadsheets.values.get({
+        spreadsheetId: spreadsheet.id,
+        range: `'${tabName}'`,
+      });
+
+      const values = response.data.values ?? [];
+      if (values.length === 0) {
+        games[tabName] = { headers: [], rows: [] };
+        continue;
+      }
+
+      const [headers, ...rows] = values;
+      games[tabName] = {
+        headers: headers as string[],
+        rows: rows as string[][],
+      };
+    }
+
+    results.push({ label: spreadsheet.label, games });
+  }
+
+  return results;
+}
+
 async function main() {
-  // Uses Application Default Credentials (ADC).
-  // In CI: set automatically by google-github-actions/auth.
-  // Locally: run `gcloud auth application-default login`, or set
-  //   GOOGLE_APPLICATION_CREDENTIALS to a service account key file path.
   const auth = new google.auth.GoogleAuth({
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   });
 
-  const sheets = google.sheets({ version: "v4", auth });
+  const sheetsApi = google.sheets({ version: "v4", auth });
 
   const config: Config = JSON.parse(
     readFileSync(resolve(ROOT, "sheets-config.json"), "utf-8")
   );
 
-  const results: SheetData[] = [];
+  console.log("Fetching sheet data...");
+  const spreadsheets = await fetchAllSheets(
+    sheetsApi as unknown as SheetsClient,
+    config
+  );
 
-  for (const sheet of config.sheets) {
-    console.log(`Fetching "${sheet.label}" (${sheet.id})...`);
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: sheet.id,
-      range: sheet.range,
-    });
-
-    const values = response.data.values ?? [];
-    if (values.length === 0) {
-      console.warn(`  Warning: sheet "${sheet.label}" returned no data.`);
-      results.push({ label: sheet.label, headers: [], rows: [] });
-      continue;
-    }
-
-    const [headers, ...rows] = values;
-    results.push({
-      label: sheet.label,
-      headers: headers as string[],
-      rows: rows as string[][],
-    });
-    console.log(`  Got ${rows.length} rows.`);
-  }
-
-  const output = {
+  const output: FetchResult = {
     fetchedAt: new Date().toISOString(),
-    sheets: results,
+    spreadsheets,
   };
 
   const outPath = resolve(ROOT, "public", "data.json");
   writeFileSync(outPath, JSON.stringify(output, null, 2));
-  console.log(`\nWrote ${outPath}`);
+  console.log(`Wrote ${outPath}`);
 }
 
-main();
+const isMainModule =
+  import.meta.url === `file://${process.argv[1]}` ||
+  process.argv[1]?.endsWith("fetch-sheets.ts");
+
+if (isMainModule) {
+  main();
+}

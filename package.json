@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "fetch-sheets": "tsx scripts/fetch-sheets.ts"
+    "fetch-sheets": "tsx scripts/fetch-sheets.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "react": "^19.2.6",
@@ -28,6 +29,7 @@
     "tsx": "^4.22.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vitest": "^4.1.6"
   }
 }
