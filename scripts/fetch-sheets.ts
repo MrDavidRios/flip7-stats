@@ -43,6 +43,35 @@ export interface SheetsClient {
   };
 }
 
+function isNumeric(value: unknown): boolean {
+  return typeof value === "string" && value !== "" && !isNaN(Number(value));
+}
+
+export function parseTabData(values: unknown[][]): TabData {
+  if (values.length === 0) return { headers: [], rows: [] };
+
+  for (let i = 0; i < values.length; i++) {
+    const row = values[i];
+    const colA = String(row[0] ?? "").trim();
+    const colB = String(row[1] ?? "").trim();
+
+    if (colA !== "" && !isNumeric(colA) && isNumeric(colB)) {
+      const headerRow = i > 0 ? values[i - 1] : values[i];
+      const headers = (headerRow as string[]).map((h) => String(h ?? ""));
+      const rows = values.slice(i).map((r) =>
+        (r as string[]).map((c) => String(c ?? ""))
+      );
+      return { headers, rows };
+    }
+  }
+
+  const [headers, ...rows] = values;
+  return {
+    headers: (headers as string[]).map((h) => String(h ?? "")),
+    rows: rows.map((r) => (r as string[]).map((c) => String(c ?? ""))),
+  };
+}
+
 export async function fetchAllSheets(
   sheetsApi: SheetsClient,
   config: Config
@@ -68,17 +97,7 @@ export async function fetchAllSheets(
         range: `'${tabName}'`,
       });
 
-      const values = response.data.values ?? [];
-      if (values.length === 0) {
-        games[tabName] = { headers: [], rows: [] };
-        continue;
-      }
-
-      const [headers, ...rows] = values;
-      games[tabName] = {
-        headers: headers as string[],
-        rows: rows as string[][],
-      };
+      games[tabName] = parseTabData(response.data.values ?? []);
     }
 
     results.push({ label: spreadsheet.label, games });
