@@ -1,9 +1,9 @@
 {
   "sheets": [
     {
-      "id": "YOUR_GOOGLE_SHEET_ID_HERE",
+      "id": "1-a9ycZD8MiajoaAiy8MH9_JzbWgR_PpUucPSF5FOv6U",
       "range": "Sheet1!A1:Z1000",
-      "label": "Player 1 Stats"
+      "label": "David's Games"
     }
   ]
 }
