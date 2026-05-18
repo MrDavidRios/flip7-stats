@@ -60,12 +60,11 @@ function App() {
       {data.spreadsheets.map((spreadsheet) => (
         <div key={spreadsheet.label}>
           <h2>{spreadsheet.label}</h2>
-          {Object.entries(spreadsheet.games).map(([gameName, tab]) => (
-            <section key={gameName} className="game-section">
-              <h3>{gameName}</h3>
-              {tab.rows.length === 0 ? (
-                <p className="empty">No data.</p>
-              ) : (
+          {Object.entries(spreadsheet.games)
+            .filter(([, tab]) => tab.rows.length > 0)
+            .map(([gameName, tab]) => (
+              <section key={gameName} className="game-section">
+                <h3>{gameName}</h3>
                 <div className="table-wrapper">
                   <table>
                     <thead>
@@ -79,16 +78,17 @@ function App() {
                       {tab.rows.map((row, ri) => (
                         <tr key={ri}>
                           {tab.headers.map((_, ci) => (
-                            <td key={ci}>{row[ci] ?? ""}</td>
+                            <td key={ci}>
+                              {row[ci] === "0" ? "" : (row[ci] ?? "")}
+                            </td>
                           ))}
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              )}
-            </section>
-          ))}
+              </section>
+            ))}
         </div>
       ))}
     </div>
