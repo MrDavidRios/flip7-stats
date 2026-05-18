@@ -51,7 +51,7 @@ function App() {
   return (
     <div className="container">
       <header>
-        <h1>Flip 7 Stats</h1>
+        <h1>Flip 7 Stats (test)</h1>
         <p className="updated">
           Last updated: {new Date(data.fetchedAt).toLocaleString()}
         </p>
