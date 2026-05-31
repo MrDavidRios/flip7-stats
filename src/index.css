@@ -5,6 +5,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+  font-family: 'Florence Sans';
+  src: url('./assets/florencesans.outline.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -12,16 +20,18 @@
   --border: oklch(0.922 0 0);
   --code-bg: #f4f3ec;
   --accent: oklch(0.97 0 0);
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
+  --accent-bg: oklch(0.97 0 0 / 0.1);
+  --accent-border: oklch(0.70 0 0 / 0.5);
+  --featured-bg: oklch(0.88 0.08 85);
+  --featured-border: oklch(0.75 0.14 85);
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
   font: 18px/145% var(--sans);
-  color-scheme: light dark;
+  color-scheme: light;
   color: var(--text);
-  background: var(--bg);
+  background: radial-gradient(ellipse at center, #f3f0d1, #ebdebb);
   -webkit-font-smoothing: antialiased;
 
   @media (max-width: 1024px) {
@@ -89,18 +99,9 @@
   --sidebar-ring: oklch(0.708 0 0)
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-  }
-}
+/* Dark theme: to re-enable, change color-scheme to "light dark" above
+   and move these vars into @media (prefers-color-scheme: dark) { :root { ... } }
+   or use the .dark class toggle approach below. */
 
 body {
   margin: 0;
@@ -131,6 +132,7 @@ code {
 }
 
 @theme inline {
+  --font-florence: 'Florence Sans', sans-serif;
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -163,6 +165,8 @@ code {
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --color-foreground: var(--foreground);
+  --color-featured-bg: var(--featured-bg);
+  --color-featured-border: var(--featured-border);
   --color-background: var(--background);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -174,6 +178,16 @@ code {
 }
 
 .dark {
+  --text: #9ca3af;
+  --text-h: #f3f4f6;
+  --bg: #16171d;
+  --border: #2e303a;
+  --code-bg: #1f2028;
+  --accent: oklch(0.30 0 0);
+  --accent-bg: oklch(0.30 0 0 / 0.15);
+  --accent-border: oklch(0.50 0 0 / 0.5);
+  --featured-bg: oklch(0.30 0.06 85);
+  --featured-border: oklch(0.50 0.10 85);
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -211,6 +225,6 @@ code {
   * {
     @apply border-border outline-ring/50;}
   body {
-    @apply bg-background text-foreground;}
+    @apply text-foreground;}
   html {
     @apply font-sans;}}

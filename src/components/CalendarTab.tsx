@@ -1,59 +1,122 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
+import type { ColumnDef } from "@tanstack/react-table"
+import { ArrowUpDown } from "lucide-react"
 import { Calendar } from "@/components/Calendar"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/Table"
+import { DataTable } from "@/components/DataTable"
+import { Button } from "@/components/Button"
 import type { GameSummary } from "@/lib/data"
+
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  )
+}
+
+const columns: ColumnDef<GameSummary>[] = [
+  {
+    accessorKey: "name",
+    header: "Game",
+    enableSorting: false,
+    cell: ({ row }) => (
+      <span className="font-medium">{row.getValue("name")}</span>
+    ),
+  },
+  {
+    accessorKey: "spreadsheetLabel",
+    header: "Source",
+    enableSorting: false,
+  },
+  {
+    accessorKey: "winner",
+    header: "Winner",
+    enableSorting: false,
+  },
+  {
+    accessorKey: "winnerScore",
+    header: ({ column }) => (
+      <div className="flex justify-end">
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Score
+          <ArrowUpDown className="ml-1 size-3.5" />
+        </Button>
+      </div>
+    ),
+    cell: ({ row }) => (
+      <span className="text-right block">{row.getValue("winnerScore")}</span>
+    ),
+  },
+  {
+    accessorKey: "playerCount",
+    header: ({ column }) => (
+      <div className="flex justify-end">
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Players
+          <ArrowUpDown className="ml-1 size-3.5" />
+        </Button>
+      </div>
+    ),
+    cell: ({ row }) => (
+      <span className="text-right block">{row.getValue("playerCount")}</span>
+    ),
+  },
+]
 
 interface CalendarTabProps {
   games: GameSummary[]
 }
 
 export function CalendarTab({ games }: CalendarTabProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
+
+  const gameDates = useMemo(
+    () =>
+      games
+        .map((g) => g.date)
+        .filter((d): d is Date => d !== null),
+    [games]
+  )
+
+  const filteredGames = useMemo(() => {
+    if (!selectedDate) return games
+    return games.filter(
+      (g) => g.date !== null && isSameDay(g.date, selectedDate)
+    )
+  }, [games, selectedDate])
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-center">
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={setSelectedDate}
-        />
-      </div>
-
-      <div>
-        <h2 className="mb-4 text-xl font-semibold text-foreground">
-          Recent Games
-        </h2>
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Game</TableHead>
-                <TableHead>Source</TableHead>
-                <TableHead>Winner</TableHead>
-                <TableHead className="text-right">Score</TableHead>
-                <TableHead className="text-right">Players</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {games.map((game, i) => (
-                <TableRow key={i}>
-                  <TableCell className="font-medium">{game.name}</TableCell>
-                  <TableCell>{game.spreadsheetLabel}</TableCell>
-                  <TableCell>{game.winner}</TableCell>
-                  <TableCell className="text-right">{game.winnerScore}</TableCell>
-                  <TableCell className="text-right">{game.playerCount}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+    <div className="mt-6">
+      <h2 className="mb-4 text-xl font-semibold text-foreground">
+        Recent Games
+      </h2>
+      <div className="space-y-8 flex gap-12">
+        <div>
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={(date) =>
+              setSelectedDate(
+                date && selectedDate && isSameDay(date, selectedDate)
+                  ? undefined
+                  : date
+              )
+            }
+            modifiers={{ hasGames: gameDates }}
+            modifiersClassNames={{
+              hasGames:
+                "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1 after:rounded-full after:bg-primary",
+            }}
+          />
+        </div>
+        <div className="overflow-hidden rounded-lg border bg-card w-full">
+          <DataTable columns={columns} data={filteredGames} />
         </div>
       </div>
     </div>

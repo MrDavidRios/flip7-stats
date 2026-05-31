@@ -26,6 +26,19 @@ export interface GameSummary {
   players: string[]
   winner: string
   winnerScore: number
+  date: Date | null
+}
+
+export function parseDateFromName(name: string): Date | null {
+  const match = name.match(/(\d{4})-(\d{2})-(\d{2})/)
+  if (match) {
+    return new Date(+match[1], +match[2] - 1, +match[3])
+  }
+  const match2 = name.match(/(\d{2})-(\d{2})-(\d{4})/)
+  if (match2) {
+    return new Date(+match2[3], +match2[1] - 1, +match2[2])
+  }
+  return null
 }
 
 export function getAllPlayers(data: Data): PlayerSummary[] {
@@ -76,6 +89,7 @@ export function getGameDates(data: Data): GameSummary[] {
         players,
         winner,
         winnerScore,
+        date: parseDateFromName(gameName),
       })
     }
   }

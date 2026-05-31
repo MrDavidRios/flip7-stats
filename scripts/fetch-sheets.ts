@@ -118,11 +118,16 @@ export async function fetchAllSheets(
 }
 
 async function main() {
-  const auth = new google.auth.GoogleAuth({
-    scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-  });
+  const apiKey = process.env.GOOGLE_API_KEY;
 
-  const sheetsApi = google.sheets({ version: "v4", auth });
+  const sheetsApi = apiKey
+    ? google.sheets({ version: "v4", auth: apiKey })
+    : google.sheets({
+        version: "v4",
+        auth: new google.auth.GoogleAuth({
+          scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+        }),
+      });
 
   const config: Config = JSON.parse(
     readFileSync(resolve(ROOT, "sheets-config.json"), "utf-8")
