@@ -17,7 +17,7 @@ export function PlayersTab({ players }: PlayersTabProps) {
             <dl className="grid grid-cols-2 gap-2 text-sm">
               <dt className="text-muted-foreground">Games played</dt>
               <dd className="text-right font-medium">{player.gamesPlayed}</dd>
-              <dt className="text-muted-foreground">Total score</dt>
+              <dt className="text-muted-foreground">Total points scored</dt>
               <dd className="text-right font-medium">{player.totalScore}</dd>
             </dl>
           </CardContent>

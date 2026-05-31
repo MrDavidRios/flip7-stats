@@ -19,11 +19,13 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  emptyMessage?: string
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  emptyMessage = "No games submitted.",
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -46,9 +48,9 @@ export function DataTable<TData, TValue>({
                 {header.isPlaceholder
                   ? null
                   : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                    header.column.columnDef.header,
+                    header.getContext()
+                  )}
               </TableHead>
             ))}
           </TableRow>
@@ -68,7 +70,7 @@ export function DataTable<TData, TValue>({
         ) : (
           <TableRow>
             <TableCell colSpan={columns.length} className="h-24 text-center">
-              No results.
+              {emptyMessage}
             </TableCell>
           </TableRow>
         )}

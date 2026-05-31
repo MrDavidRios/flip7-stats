@@ -115,8 +115,12 @@ export function CalendarTab({ games }: CalendarTabProps) {
             }}
           />
         </div>
-        <div className="overflow-hidden rounded-lg border bg-card w-full">
-          <DataTable columns={columns} data={filteredGames} />
+        <div className="overflow-hidden rounded-lg border bg-card w-full h-min">
+          <DataTable
+            columns={columns}
+            data={filteredGames}
+            emptyMessage={selectedDate ? "No games played today." : "No games submitted."}
+          />
         </div>
       </div>
     </div>
