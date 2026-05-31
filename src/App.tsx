@@ -46,7 +46,7 @@ function App() {
       <AppHeader fetchedAt={data.fetchedAt} />
 
       <Tabs defaultValue="calendar">
-        <TabsList>
+        <TabsList className="mb-6">
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="players">Players</TabsTrigger>
         </TabsList>

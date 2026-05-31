@@ -92,10 +92,7 @@ export function CalendarTab({ games }: CalendarTabProps) {
   }, [games, selectedDate])
 
   return (
-    <div className="mt-6">
-      <h2 className="mb-4 text-xl font-semibold text-foreground">
-        Recent Games
-      </h2>
+    <div>
       <div className="space-y-8 flex gap-12">
         <div>
           <Calendar
