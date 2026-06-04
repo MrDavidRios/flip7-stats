@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import type { ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown } from "lucide-react"
 import { Calendar } from "@/components/Calendar"
@@ -64,10 +65,10 @@ const columns: ColumnDef<GameSummary>[] = [
 
 interface CalendarTabProps {
   games: GameSummary[]
-  onSelectGame?: (game: GameSummary) => void
 }
 
-export function CalendarTab({ games, onSelectGame }: CalendarTabProps) {
+export function CalendarTab({ games }: CalendarTabProps) {
+  const navigate = useNavigate()
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
 
   const gameDates = useMemo(
@@ -111,7 +112,7 @@ export function CalendarTab({ games, onSelectGame }: CalendarTabProps) {
             columns={columns}
             data={filteredGames}
             emptyMessage={selectedDate ? `No games played on ${selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.` : "No games submitted."}
-            onRowClick={onSelectGame}
+            onRowClick={(game) => navigate(`/games/${game.index}`)}
           />
         </div>
       </div>

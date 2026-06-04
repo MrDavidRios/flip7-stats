@@ -1,9 +1,10 @@
 import { useMemo } from "react"
+import { useParams, useNavigate } from "react-router-dom"
 import { ArrowLeft, Trophy } from "lucide-react"
 import { Button } from "@/components/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card"
 import { GameTable } from "@/components/GameTable"
-import { getGameDetail, type Data } from "@/lib/data"
+import { getGameDetail, type Data, type GameSummary } from "@/lib/data"
 
 function formatPlace(place: number): string {
   if (place === 1) return "1st"
@@ -23,28 +24,29 @@ function formatDate(date: Date | null): string {
 }
 
 interface GameDetailViewProps {
-  gameName: string
-  spreadsheetLabel: string
   data: Data
-  onBack: () => void
+  games: GameSummary[]
 }
 
-export function GameDetailView({
-  gameName,
-  spreadsheetLabel,
-  data,
-  onBack,
-}: GameDetailViewProps) {
+export function GameDetailView({ data, games }: GameDetailViewProps) {
+  const { index } = useParams<{ index: string }>()
+  const navigate = useNavigate()
+
+  const gameSummary = games.find((g) => g.index === Number(index))
+
   const game = useMemo(
-    () => getGameDetail(data, gameName, spreadsheetLabel),
-    [data, gameName, spreadsheetLabel]
+    () =>
+      gameSummary
+        ? getGameDetail(data, gameSummary.name, gameSummary.spreadsheetLabel)
+        : null,
+    [data, gameSummary]
   )
 
   if (!game) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onBack}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="size-5" />
           </Button>
           <h2 className="text-2xl font-bold">Game not found</h2>
@@ -56,7 +58,7 @@ export function GameDetailView({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={onBack}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="size-5" />
         </Button>
         <div>

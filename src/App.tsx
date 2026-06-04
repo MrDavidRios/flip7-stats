@@ -1,23 +1,38 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { Routes, Route, NavLink, Navigate } from "react-router-dom"
 import "./App.css"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Tabs"
 import { AppHeader } from "@/components/AppHeader"
 import { CalendarTab } from "@/components/CalendarTab"
 import { PlayersTab } from "@/components/PlayersTab"
 import { PlayerDashboard } from "@/components/PlayerDashboard"
 import { GameDetailView } from "@/components/GameDetailView"
-import { getAllPlayers, getGameDates, type Data, type GameSummary } from "@/lib/data"
+import { getAllPlayers, getGameDates, type Data } from "@/lib/data"
+import { cn } from "@/lib/utils"
 
-interface SelectedGame {
-  name: string
-  spreadsheetLabel: string
+function TabNav() {
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    cn(
+      "relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap transition-all",
+      isActive
+        ? "bg-background text-foreground shadow-sm"
+        : "text-foreground/60 hover:text-foreground"
+    )
+
+  return (
+    <nav className="inline-flex w-fit items-center justify-center rounded-lg bg-muted p-[3px] h-8 mb-6">
+      <NavLink to="/" end className={linkClass}>
+        Calendar
+      </NavLink>
+      <NavLink to="/players" end className={linkClass}>
+        Players
+      </NavLink>
+    </nav>
+  )
 }
 
 function App() {
   const [data, setData] = useState<Data | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
-  const [selectedGame, setSelectedGame] = useState<SelectedGame | null>(null)
 
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data.json`)
@@ -28,6 +43,9 @@ function App() {
       .then(setData)
       .catch((e) => setError(e.message))
   }, [])
+
+  const players = useMemo(() => (data ? getAllPlayers(data) : []), [data])
+  const games = useMemo(() => (data ? getGameDates(data) : []), [data])
 
   if (error) {
     return (
@@ -47,59 +65,38 @@ function App() {
     )
   }
 
-  const handleSelectGame = (game: GameSummary) => {
-    setSelectedGame({ name: game.name, spreadsheetLabel: game.spreadsheetLabel })
-  }
-
-  if (selectedPlayer) {
-    return (
-      <div className="container">
-        <AppHeader fetchedAt={data.fetchedAt} />
-        <PlayerDashboard
-          playerName={selectedPlayer}
-          data={data}
-          onBack={() => setSelectedPlayer(null)}
-        />
-      </div>
-    )
-  }
-
-  if (selectedGame) {
-    return (
-      <div className="container">
-        <AppHeader fetchedAt={data.fetchedAt} />
-        <GameDetailView
-          gameName={selectedGame.name}
-          spreadsheetLabel={selectedGame.spreadsheetLabel}
-          data={data}
-          onBack={() => setSelectedGame(null)}
-        />
-      </div>
-    )
-  }
-
-  const players = getAllPlayers(data)
-  const games = getGameDates(data)
-
   return (
     <div className="container">
       <AppHeader fetchedAt={data.fetchedAt} />
-
-      <Tabs defaultValue="calendar">
-        <TabsList className="mb-6">
-          <TabsTrigger value="calendar">Calendar</TabsTrigger>
-          <TabsTrigger value="players">Players</TabsTrigger>
-        </TabsList>
-        <TabsContent value="calendar">
-          <CalendarTab games={games} onSelectGame={handleSelectGame} />
-        </TabsContent>
-        <TabsContent value="players">
-          <PlayersTab
-            players={players}
-            onSelectPlayer={setSelectedPlayer}
-          />
-        </TabsContent>
-      </Tabs>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <>
+              <TabNav />
+              <CalendarTab games={games} />
+            </>
+          }
+        />
+        <Route
+          path="/players"
+          element={
+            <>
+              <TabNav />
+              <PlayersTab players={players} />
+            </>
+          }
+        />
+        <Route
+          path="/players/:name"
+          element={<PlayerDashboard data={data} />}
+        />
+        <Route
+          path="/games/:index"
+          element={<GameDetailView data={data} games={games} />}
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   )
 }

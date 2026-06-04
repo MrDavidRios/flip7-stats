@@ -20,6 +20,7 @@ export interface PlayerSummary {
 }
 
 export interface GameSummary {
+  index: number
   name: string
   spreadsheetLabel: string
   playerCount: number
@@ -176,6 +177,7 @@ export function getPlayerStats(games: PlayerGameDetail[]): PlayerStats {
 
 export function getGameDates(data: Data): GameSummary[] {
   const games: GameSummary[] = []
+  let index = 0
 
   for (const spreadsheet of data.spreadsheets) {
     for (const [gameName, tab] of Object.entries(spreadsheet.games)) {
@@ -194,6 +196,7 @@ export function getGameDates(data: Data): GameSummary[] {
       }
 
       games.push({
+        index: index++,
         name: gameName,
         spreadsheetLabel: spreadsheet.label,
         playerCount: players.length,

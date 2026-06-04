@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { useParams, useNavigate } from "react-router-dom"
 import type { ColumnDef } from "@tanstack/react-table"
 import { ArrowLeft, ArrowUpDown } from "lucide-react"
 import { Calendar } from "@/components/Calendar"
@@ -87,16 +88,13 @@ const columns: ColumnDef<PlayerGameDetail>[] = [
 ]
 
 interface PlayerDashboardProps {
-  playerName: string
   data: Data
-  onBack: () => void
 }
 
-export function PlayerDashboard({
-  playerName,
-  data,
-  onBack,
-}: PlayerDashboardProps) {
+export function PlayerDashboard({ data }: PlayerDashboardProps) {
+  const { name } = useParams<{ name: string }>()
+  const navigate = useNavigate()
+  const playerName = decodeURIComponent(name ?? "")
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
 
   const games = useMemo(
@@ -121,7 +119,7 @@ export function PlayerDashboard({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={onBack}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="size-5" />
         </Button>
         <h2 className="text-2xl font-bold">{playerName}</h2>
