@@ -110,7 +110,7 @@ export function CalendarTab({ games, onSelectGame }: CalendarTabProps) {
           <DataTable
             columns={columns}
             data={filteredGames}
-            emptyMessage={selectedDate ? "No games played today." : "No games submitted."}
+            emptyMessage={selectedDate ? `No games played on ${selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.` : "No games submitted."}
             onRowClick={onSelectGame}
           />
         </div>
