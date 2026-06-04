@@ -4,11 +4,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/Tabs"
 import { AppHeader } from "@/components/AppHeader"
 import { CalendarTab } from "@/components/CalendarTab"
 import { PlayersTab } from "@/components/PlayersTab"
-import { getAllPlayers, getGameDates, type Data } from "@/lib/data"
+import { PlayerDashboard } from "@/components/PlayerDashboard"
+import { GameDetailView } from "@/components/GameDetailView"
+import { getAllPlayers, getGameDates, type Data, type GameSummary } from "@/lib/data"
+
+interface SelectedGame {
+  name: string
+  spreadsheetLabel: string
+}
 
 function App() {
   const [data, setData] = useState<Data | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
+  const [selectedGame, setSelectedGame] = useState<SelectedGame | null>(null)
 
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data.json`)
@@ -38,6 +47,37 @@ function App() {
     )
   }
 
+  const handleSelectGame = (game: GameSummary) => {
+    setSelectedGame({ name: game.name, spreadsheetLabel: game.spreadsheetLabel })
+  }
+
+  if (selectedPlayer) {
+    return (
+      <div className="container">
+        <AppHeader fetchedAt={data.fetchedAt} />
+        <PlayerDashboard
+          playerName={selectedPlayer}
+          data={data}
+          onBack={() => setSelectedPlayer(null)}
+        />
+      </div>
+    )
+  }
+
+  if (selectedGame) {
+    return (
+      <div className="container">
+        <AppHeader fetchedAt={data.fetchedAt} />
+        <GameDetailView
+          gameName={selectedGame.name}
+          spreadsheetLabel={selectedGame.spreadsheetLabel}
+          data={data}
+          onBack={() => setSelectedGame(null)}
+        />
+      </div>
+    )
+  }
+
   const players = getAllPlayers(data)
   const games = getGameDates(data)
 
@@ -51,10 +91,13 @@ function App() {
           <TabsTrigger value="players">Players</TabsTrigger>
         </TabsList>
         <TabsContent value="calendar">
-          <CalendarTab games={games} />
+          <CalendarTab games={games} onSelectGame={handleSelectGame} />
         </TabsContent>
         <TabsContent value="players">
-          <PlayersTab players={players} />
+          <PlayersTab
+            players={players}
+            onSelectPlayer={setSelectedPlayer}
+          />
         </TabsContent>
       </Tabs>
     </div>

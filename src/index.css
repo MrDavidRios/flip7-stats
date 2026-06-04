@@ -115,12 +115,10 @@ h1, h2 {
 h1 {
   font-size: 42px;
   letter-spacing: -1px;
-  margin: 0 0 8px;
 }
 
 h2 {
   font-size: 22px;
-  margin: 0 0 16px;
 }
 
 code {

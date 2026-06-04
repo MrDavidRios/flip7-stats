@@ -3,13 +3,18 @@ import type { PlayerSummary } from "@/lib/data"
 
 interface PlayersTabProps {
   players: PlayerSummary[]
+  onSelectPlayer: (name: string) => void
 }
 
-export function PlayersTab({ players }: PlayersTabProps) {
+export function PlayersTab({ players, onSelectPlayer }: PlayersTabProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {players.map((player) => (
-        <Card key={player.name}>
+        <Card
+          key={player.name}
+          className="cursor-pointer transition-colors hover:brightness-95"
+          onClick={() => onSelectPlayer(player.name)}
+        >
           <CardHeader>
             <CardTitle>{player.name}</CardTitle>
           </CardHeader>

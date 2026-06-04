@@ -5,14 +5,7 @@ import { Calendar } from "@/components/Calendar"
 import { DataTable } from "@/components/DataTable"
 import { Button } from "@/components/Button"
 import type { GameSummary } from "@/lib/data"
-
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  )
-}
+import { isSameDay } from "@/lib/utils"
 
 const columns: ColumnDef<GameSummary>[] = [
   {
@@ -71,9 +64,10 @@ const columns: ColumnDef<GameSummary>[] = [
 
 interface CalendarTabProps {
   games: GameSummary[]
+  onSelectGame?: (game: GameSummary) => void
 }
 
-export function CalendarTab({ games }: CalendarTabProps) {
+export function CalendarTab({ games, onSelectGame }: CalendarTabProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
 
   const gameDates = useMemo(
@@ -117,6 +111,7 @@ export function CalendarTab({ games }: CalendarTabProps) {
             columns={columns}
             data={filteredGames}
             emptyMessage={selectedDate ? "No games played today." : "No games submitted."}
+            onRowClick={onSelectGame}
           />
         </div>
       </div>
