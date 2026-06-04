@@ -100,6 +100,7 @@ export function CalendarTab({ games }: CalendarTabProps) {
                   : date
               )
             }
+            disabled={{ after: new Date() }}
             modifiers={{ hasGames: gameDates }}
             modifiersClassNames={{
               hasGames:

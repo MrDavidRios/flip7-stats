@@ -184,6 +184,7 @@ export function PlayerDashboard({ data }: PlayerDashboardProps) {
                     : date
                 )
               }
+              disabled={{ after: new Date() }}
               modifiers={{ hasGames: gameDates }}
               modifiersClassNames={{
                 hasGames:
