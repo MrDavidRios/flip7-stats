@@ -6,7 +6,7 @@ import { Calendar } from "@/components/Calendar"
 import { DataTable } from "@/components/DataTable"
 import { Button } from "@/components/Button"
 import type { GameSummary } from "@/lib/data"
-import { isSameDay } from "@/lib/utils"
+import { cn, isSameDay } from "@/lib/utils"
 
 const columns: ColumnDef<GameSummary>[] = [
   {
@@ -74,6 +74,12 @@ export function CalendarTab({ games }: CalendarTabProps) {
     [games]
   )
 
+  const [month, setMonth] = useState<Date>(() =>
+    gameDates.length
+      ? new Date(Math.max(...gameDates.map((d) => d.getTime())))
+      : new Date()
+  )
+
   const filteredGames = useMemo(() => {
     if (!selectedDate) return games
     return games.filter(
@@ -96,11 +102,23 @@ export function CalendarTab({ games }: CalendarTabProps) {
                 ? new Date(Math.min(...gameDates.map((d) => d.getTime())))
                 : undefined
             }
-            defaultMonth={
-              gameDates.length
-                ? new Date(Math.max(...gameDates.map((d) => d.getTime())))
-                : undefined
-            }
+            month={month}
+            onMonthChange={setMonth}
+            components={{
+              CaptionLabel: ({ children, className }) => (
+                <button
+                  type="button"
+                  className={cn(
+                    className,
+                    "cursor-pointer rounded-md px-2 py-1 hover:bg-muted/60"
+                  )}
+                  title="Go to current month"
+                  onClick={() => setMonth(new Date())}
+                >
+                  {children}
+                </button>
+              ),
+            }}
             selected={selectedDate}
             onSelect={(date) =>
               setSelectedDate(
