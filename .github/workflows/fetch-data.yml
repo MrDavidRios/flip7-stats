@@ -1,0 +1,64 @@
+name: Fetch Sheet Data
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # Daily at 6 AM UTC
+  workflow_dispatch: # Manual trigger
+
+permissions:
+  contents: write # push data.json to the `data` branch
+  actions: write # dispatch the deploy workflow
+  id-token: write # Google Cloud workload identity
+
+concurrency:
+  group: fetch-data
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install --frozen-lockfile
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Fetch Google Sheets data
+        run: bun scripts/fetch-sheets.ts
+
+      - name: Commit data.json to the data branch
+        id: commit
+        run: |
+          mv public/data.json "$RUNNER_TEMP/data.json"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin data >/dev/null 2>&1; then
+            git fetch origin data
+            git checkout -f -B data origin/data
+          else
+            git checkout --orphan data
+            git rm -rf -q .
+          fi
+          cp "$RUNNER_TEMP/data.json" data.json
+          git add data.json
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "data.json unchanged; skipping commit"
+          else
+            git commit -m "chore: update sheet data"
+            git push origin data
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger deploy
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref ${{ github.event.repository.default_branch }}
