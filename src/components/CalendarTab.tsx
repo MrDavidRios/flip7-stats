@@ -91,6 +91,11 @@ export function CalendarTab({ games }: CalendarTabProps) {
         <div className="md:shrink-0">
           <Calendar
             mode="single"
+            startMonth={
+              gameDates.length
+                ? new Date(Math.min(...gameDates.map((d) => d.getTime())))
+                : undefined
+            }
             defaultMonth={
               gameDates.length
                 ? new Date(Math.max(...gameDates.map((d) => d.getTime())))
