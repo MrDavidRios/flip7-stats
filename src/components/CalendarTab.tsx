@@ -6,7 +6,7 @@ import { Calendar } from "@/components/Calendar"
 import { DataTable } from "@/components/DataTable"
 import { Button } from "@/components/Button"
 import type { GameSummary } from "@/lib/data"
-import { isSameDay } from "@/lib/utils"
+import { cn, isSameDay } from "@/lib/utils"
 
 const columns: ColumnDef<GameSummary>[] = [
   {
@@ -16,11 +16,6 @@ const columns: ColumnDef<GameSummary>[] = [
     cell: ({ row }) => (
       <span className="font-medium">{row.getValue("name")}</span>
     ),
-  },
-  {
-    accessorKey: "spreadsheetLabel",
-    header: "Source",
-    enableSorting: false,
   },
   {
     accessorKey: "winner",
@@ -79,6 +74,16 @@ export function CalendarTab({ games }: CalendarTabProps) {
     [games]
   )
 
+  const latestGameDate = useMemo(
+    () =>
+      gameDates.length
+        ? new Date(Math.max(...gameDates.map((d) => d.getTime())))
+        : undefined,
+    [gameDates]
+  )
+
+  const [month, setMonth] = useState<Date>(() => latestGameDate ?? new Date())
+
   const filteredGames = useMemo(() => {
     if (!selectedDate) return games
     return games.filter(
@@ -96,6 +101,29 @@ export function CalendarTab({ games }: CalendarTabProps) {
         <div className="md:shrink-0">
           <Calendar
             mode="single"
+            startMonth={
+              gameDates.length
+                ? new Date(Math.min(...gameDates.map((d) => d.getTime())))
+                : undefined
+            }
+            endMonth={latestGameDate}
+            month={month}
+            onMonthChange={setMonth}
+            components={{
+              CaptionLabel: ({ children, className }) => (
+                <button
+                  type="button"
+                  className={cn(
+                    className,
+                    "cursor-pointer rounded-md px-2 py-1 hover:bg-muted/60"
+                  )}
+                  title="Go to latest month"
+                  onClick={() => setMonth(latestGameDate ?? new Date())}
+                >
+                  {children}
+                </button>
+              ),
+            }}
             selected={selectedDate}
             onSelect={(date) =>
               setSelectedDate(
@@ -104,12 +132,7 @@ export function CalendarTab({ games }: CalendarTabProps) {
                   : date
               )
             }
-            disabled={{ after: new Date() }}
-            modifiers={{ hasGames: gameDates }}
-            modifiersClassNames={{
-              hasGames:
-                "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1 after:rounded-full after:bg-primary",
-            }}
+            disabled={(date) => !gameDates.some((d) => isSameDay(d, date))}
           />
         </div>
         <div className="hidden overflow-hidden rounded-lg border bg-card w-full h-min md:block">
