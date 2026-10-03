@@ -91,6 +91,11 @@ export function CalendarTab({ games }: CalendarTabProps) {
         <div className="md:shrink-0">
           <Calendar
             mode="single"
+            defaultMonth={
+              gameDates.length
+                ? new Date(Math.max(...gameDates.map((d) => d.getTime())))
+                : undefined
+            }
             selected={selectedDate}
             onSelect={(date) =>
               setSelectedDate(
@@ -99,7 +104,7 @@ export function CalendarTab({ games }: CalendarTabProps) {
                   : date
               )
             }
-            disabled={{ after: new Date() }}
+            disabled={(date) => !gameDates.some((d) => isSameDay(d, date))}
             modifiers={{ hasGames: gameDates }}
             modifiersClassNames={{
               hasGames:
