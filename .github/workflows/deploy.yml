@@ -1,9 +1,9 @@
-name: Update Sheet Data & Deploy
+name: Deploy
 
 on:
-  schedule:
-    - cron: "0 6 * * *" # Daily at 6 AM UTC
-  workflow_dispatch: # Manual trigger
+  push:
+    branches: [main]
+  workflow_dispatch: # Also dispatched by fetch-data.yml when the data changes
 
 permissions:
   contents: read
@@ -23,18 +23,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Get latest data.json from the data branch
+        uses: actions/checkout@v4
+        with:
+          ref: data
+          path: data-branch
+
+      - run: cp data-branch/data.json public/data.json
+
       - uses: oven-sh/setup-bun@v2
 
       - run: bun install --frozen-lockfile
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
-          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-
-      - name: Fetch Google Sheets data
-        run: bun scripts/fetch-sheets.ts
 
       - name: Build
         run: bun run build
