@@ -19,7 +19,7 @@ function TabNav() {
     )
 
   return (
-    <nav className="inline-flex w-fit items-center justify-center rounded-lg bg-muted p-[3px] h-8 mb-6">
+    <nav className="flex w-full items-center justify-center rounded-lg bg-muted p-[3px] h-11 mb-6 md:inline-flex md:w-fit md:h-8">
       <NavLink to="/" end className={linkClass}>
         Calendar
       </NavLink>

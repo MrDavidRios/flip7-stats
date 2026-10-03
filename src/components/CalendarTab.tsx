@@ -86,10 +86,14 @@ export function CalendarTab({ games }: CalendarTabProps) {
     )
   }, [games, selectedDate])
 
+  const emptyMessage = selectedDate
+    ? `No games played on ${selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.`
+    : "No games submitted."
+
   return (
     <div>
-      <div className="space-y-8 flex gap-12">
-        <div>
+      <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-12">
+        <div className="md:shrink-0">
           <Calendar
             mode="single"
             selected={selectedDate}
@@ -108,14 +112,33 @@ export function CalendarTab({ games }: CalendarTabProps) {
             }}
           />
         </div>
-        <div className="overflow-hidden rounded-lg border bg-card w-full h-min">
+        <div className="hidden overflow-hidden rounded-lg border bg-card w-full h-min md:block">
           <DataTable
             columns={columns}
             data={filteredGames}
-            emptyMessage={selectedDate ? `No games played on ${selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.` : "No games submitted."}
+            emptyMessage={emptyMessage}
             onRowClick={(game) => navigate(`/games/${game.index}`)}
           />
         </div>
+        <ul className="overflow-hidden rounded-lg border bg-card md:hidden">
+          {filteredGames.length === 0 && (
+            <li className="p-6 text-center text-sm">{emptyMessage}</li>
+          )}
+          {filteredGames.map((game) => (
+            <li key={game.index} className="odd:bg-muted/30">
+              <button
+                type="button"
+                onClick={() => navigate(`/games/${game.index}`)}
+                className="flex min-h-14 w-full flex-col gap-0.5 px-4 py-3 text-left active:bg-muted/50"
+              >
+                <span className="font-medium break-words">{game.name}</span>
+                <span className="text-sm text-muted-foreground">
+                  {game.winner} won with {game.winnerScore} · {game.playerCount} players
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   )
