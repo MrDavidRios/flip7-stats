@@ -105,11 +105,6 @@ export function CalendarTab({ games }: CalendarTabProps) {
               )
             }
             disabled={(date) => !gameDates.some((d) => isSameDay(d, date))}
-            modifiers={{ hasGames: gameDates }}
-            modifiersClassNames={{
-              hasGames:
-                "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1 after:rounded-full after:bg-primary",
-            }}
           />
         </div>
         <div className="hidden overflow-hidden rounded-lg border bg-card w-full h-min md:block">
