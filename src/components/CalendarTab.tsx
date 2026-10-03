@@ -18,11 +18,6 @@ const columns: ColumnDef<GameSummary>[] = [
     ),
   },
   {
-    accessorKey: "spreadsheetLabel",
-    header: "Source",
-    enableSorting: false,
-  },
-  {
     accessorKey: "winner",
     header: "Winner",
     enableSorting: false,
