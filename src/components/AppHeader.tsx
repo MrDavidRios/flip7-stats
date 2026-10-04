@@ -42,7 +42,7 @@ export function AppHeader({ fetchedAt }: AppHeaderProps) {
         <time
           dateTime={fetchedAt}
           title={updated.toLocaleString()}
-          className="shrink-0 text-xs text-muted-foreground md:text-sm"
+          className="shrink-0 text-xs text-muted-foreground"
         >
           {formatUpdated(updated, now)}
         </time>
