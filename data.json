@@ -1,10 +1,12 @@
 {
-  "fetchedAt": "2026-10-03T23:55:02.881Z",
+  "fetchedAt": "2026-10-04T05:04:17.357Z",
   "spreadsheets": [
     {
+      "id": "1-a9ycZD8MiajoaAiy8MH9_JzbWgR_PpUucPSF5FOv6U",
       "label": "David's games",
       "games": {
         "05-16-2026, game 1": {
+          "gid": 0,
           "headers": [
             "Player",
             "Total",
@@ -84,6 +86,7 @@
           ]
         },
         "05-16-2026, game 2": {
+          "gid": 427209468,
           "headers": [
             "Player",
             "Total",
@@ -160,9 +163,11 @@
       }
     },
     {
+      "id": "10pm3aLL1phhr8zk2W2c0BaOrTbe6Gomf05K5ZvvYjF4",
       "label": "Gabe's games",
       "games": {
         "2026-03-21, game 2": {
+          "gid": 0,
           "headers": [
             "Player",
             "Total",
@@ -240,6 +245,7 @@
           ]
         },
         "2026-04-11": {
+          "gid": 1092303842,
           "headers": [
             "Player",
             "Total",
@@ -297,6 +303,7 @@
           ]
         },
         "2026-04-11, game 2": {
+          "gid": 1087299529,
           "headers": [
             "Player",
             "Total",
@@ -360,6 +367,7 @@
           ]
         },
         "2026-05-16, game 1": {
+          "gid": 1093693858,
           "headers": [
             "Player",
             "Total",
@@ -428,6 +436,7 @@
           ]
         },
         "2026-05-16, game 2": {
+          "gid": 23188204,
           "headers": [
             "Player",
             "Total",
@@ -499,6 +508,7 @@
           ]
         },
         "2026-05-16, game 3": {
+          "gid": 1303477898,
           "headers": [
             "Player",
             "Total",
@@ -531,6 +541,7 @@
           ]
         },
         "2026-05-22, game 1": {
+          "gid": 1158626322,
           "headers": [
             "Player",
             "Total",
@@ -603,6 +614,7 @@
           ]
         },
         "2026-05-23, game 1": {
+          "gid": 1410856115,
           "headers": [
             "Player",
             "Total",
@@ -643,6 +655,7 @@
           ]
         },
         "2026-05-23, game 2": {
+          "gid": 1751115242,
           "headers": [
             "Player",
             "Total",
@@ -699,6 +712,7 @@
           ]
         },
         "2026-05-24, game 1": {
+          "gid": 1707532581,
           "headers": [
             "Player",
             "Total",
@@ -774,6 +788,7 @@
           ]
         },
         "2026-05-24, game 2": {
+          "gid": 1590163261,
           "headers": [
             "Player",
             "Total",
@@ -829,6 +844,7 @@
           ]
         },
         "2026-07-18, game 1": {
+          "gid": 1555535504,
           "headers": [
             "Player",
             "Total",
@@ -902,6 +918,7 @@
           ]
         },
         "2026-07-25, game 1": {
+          "gid": 1354335607,
           "headers": [
             "Player",
             "Total",
@@ -961,6 +978,7 @@
           ]
         },
         "2026-07-25, game 2": {
+          "gid": 1500950827,
           "headers": [
             "Player",
             "Total",
@@ -1000,6 +1018,7 @@
           ]
         },
         "2026-07-25, game 3": {
+          "gid": 2064581210,
           "headers": [
             "Player",
             "Total",
@@ -1055,6 +1074,7 @@
           ]
         },
         "2026-07-25, game 4": {
+          "gid": 835653048,
           "headers": [
             "Player",
             "Total",
@@ -1140,6 +1160,7 @@
           ]
         },
         "2026-07-26, game 1": {
+          "gid": 1352949565,
           "headers": [
             "Player",
             "Total",
@@ -1197,6 +1218,7 @@
           ]
         },
         "2026-07-26, game 2": {
+          "gid": 820275438,
           "headers": [
             "Player",
             "Total",
@@ -1234,6 +1256,7 @@
           ]
         },
         "2026-10-03, game 1": {
+          "gid": 453656617,
           "headers": [
             "Player",
             "Total",
@@ -1309,6 +1332,7 @@
           ]
         },
         "2026-10-03, game 2": {
+          "gid": 150803018,
           "headers": [
             "Player",
             "Total",
@@ -1389,6 +1413,7 @@
           ]
         },
         "2026-10-03, game 3": {
+          "gid": 1507994450,
           "headers": [
             "Player",
             "Total",
@@ -1474,6 +1499,7 @@
           ]
         },
         "[JC] 2026-04-11, game 1": {
+          "gid": 802906195,
           "headers": [
             "Player",
             "Total",
@@ -1524,6 +1550,7 @@
           ]
         },
         "Sheet3": {
+          "gid": 316372521,
           "headers": [],
           "rows": []
         }
