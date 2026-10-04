@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react"
+import { X } from "lucide-react"
+import { Button } from "@/components/Button"
 import { Calendar } from "@/components/Calendar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/Tooltip"
 import { cn, isSameDay } from "@/lib/utils"
@@ -88,6 +90,28 @@ export function GameCalendar({
             <button {...props} />
           ),
       }}
+      footer={
+        selectedDate && (
+          <div className="flex justify-center pt-2 animate-in fade-in-0 duration-150">
+            <Button
+              variant="ghost"
+              size="xs"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={(e) => {
+                const root = e.currentTarget.closest(".rdp-root")
+                onSelectedDateChange(undefined)
+                // The button unmounts on clear; hand focus back to the grid.
+                requestAnimationFrame(() =>
+                  root?.querySelector<HTMLElement>("button[tabindex='0']")?.focus()
+                )
+              }}
+            >
+              <X data-icon="inline-start" />
+              Clear selection
+            </Button>
+          </div>
+        )
+      }
       selected={selectedDate}
       onSelect={(date) =>
         onSelectedDateChange(
