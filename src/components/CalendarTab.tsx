@@ -5,6 +5,7 @@ import { ArrowUpDown } from "lucide-react"
 import { Calendar } from "@/components/Calendar"
 import { DataTable } from "@/components/DataTable"
 import { Button } from "@/components/Button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/Tooltip"
 import type { GameSummary } from "@/lib/data"
 import { cn, isSameDay } from "@/lib/utils"
 
@@ -117,12 +118,29 @@ export function CalendarTab({ games }: CalendarTabProps) {
                     className,
                     "cursor-pointer rounded-md px-2 py-1 hover:bg-muted/60"
                   )}
-                  title="Go to latest month"
                   onClick={() => setMonth(latestGameDate ?? new Date())}
                 >
                   {children}
                 </button>
               ),
+              PreviousMonthButton: (props) =>
+                props["aria-disabled"] ? (
+                  <Tooltip>
+                    <TooltipTrigger render={<button {...props} />} />
+                    <TooltipContent>No earlier games</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <button {...props} />
+                ),
+              NextMonthButton: (props) =>
+                props["aria-disabled"] ? (
+                  <Tooltip>
+                    <TooltipTrigger render={<button {...props} />} />
+                    <TooltipContent>No later games</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <button {...props} />
+                ),
             }}
             selected={selectedDate}
             onSelect={(date) =>
