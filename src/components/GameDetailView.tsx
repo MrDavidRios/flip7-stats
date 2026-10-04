@@ -1,6 +1,6 @@
 import { useMemo } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, Trophy } from "lucide-react"
+import { useParams, useNavigate, Link } from "react-router-dom"
+import { ArrowLeft, ChevronRight, Trophy } from "lucide-react"
 import { Button } from "@/components/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card"
 import { GameTable } from "@/components/GameTable"
@@ -22,6 +22,10 @@ function formatDate(date: Date | null): string {
     day: "numeric",
     year: "numeric",
   })
+}
+
+function playerPath(name: string): string {
+  return `/players/${encodeURIComponent(name)}`
 }
 
 interface GameDetailViewProps {
@@ -79,20 +83,26 @@ export function GameDetailView({ data }: GameDetailViewProps) {
 
       <div className="hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-4">
         {game.players.map((player) => (
-          <Card key={player.name}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground font-normal flex items-center gap-1.5">
-                {player.place === 1 && <Trophy className="size-3.5" />}
-                {formatPlace(player.place)}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xl font-bold">{player.name}</p>
-              <p className="text-sm text-muted-foreground">
-                {player.score} points
-              </p>
-            </CardContent>
-          </Card>
+          <Link
+            key={player.name}
+            to={playerPath(player.name)}
+            className="no-underline"
+          >
+            <Card className="cursor-pointer transition-colors hover:brightness-95 h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground font-normal flex items-center gap-1.5">
+                  {player.place === 1 && <Trophy className="size-3.5" />}
+                  {formatPlace(player.place)}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xl font-bold">{player.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {player.score} points
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
@@ -115,33 +125,36 @@ function Standings({ game }: { game: GameDetail }) {
       {game.players.map((player) => {
         const won = player.place === 1
         return (
-          <li
-            key={player.name}
-            className={cn(
-              "flex items-center gap-3 px-4 py-3 first:rounded-t-lg last:rounded-b-lg",
-              won && "bg-featured-bg"
-            )}
-          >
-            <span className="flex w-12 shrink-0 items-center gap-1 text-sm tabular-nums text-foreground/70">
-              {won && <Trophy aria-label="Winner" className="size-3.5 text-foreground" />}
-              {formatPlace(player.place)}
-            </span>
-            <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <span className={cn("truncate", won ? "text-lg font-bold" : "font-medium")}>
-                {player.name}
+          <li key={player.name} className="first:*:rounded-t-lg last:*:rounded-b-lg">
+            <Link
+              to={playerPath(player.name)}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 text-foreground no-underline active:bg-muted/60",
+                won && "bg-featured-bg"
+              )}
+              >
+              <span className="flex w-12 shrink-0 items-center gap-1 text-sm tabular-nums text-foreground/70">
+                {won && <Trophy aria-label="Winner" className="size-3.5 text-foreground" />}
+                {formatPlace(player.place)}
               </span>
-              <span aria-hidden className="h-1.5 overflow-hidden rounded-full bg-foreground/10">
-                <span
-                  className="block h-full rounded-full bg-primary"
-                  style={{ width: `${Math.max(0, Math.min(100, (player.score / top) * 100))}%` }}
-                />
+              <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <span className={cn("truncate", won ? "text-lg font-bold" : "font-medium")}>
+                  {player.name}
+                </span>
+                <span aria-hidden className="h-1.5 overflow-hidden rounded-full bg-foreground/10">
+                  <span
+                    className="block h-full rounded-full bg-primary"
+                    style={{ width: `${Math.max(0, Math.min(100, (player.score / top) * 100))}%` }}
+                  />
+                </span>
               </span>
-            </span>
-            <span className="w-12 shrink-0 text-right tabular-nums">
-              <span className={cn("block", won ? "text-lg font-bold" : "font-semibold")}>
-                {player.score}
+              <span className="w-12 shrink-0 text-right tabular-nums">
+                <span className={cn("block", won ? "text-lg font-bold" : "font-semibold")}>
+                  {player.score}
+                </span>
               </span>
-            </span>
+              <ChevronRight aria-hidden className="size-4 shrink-0 text-foreground/40" />
+            </Link>
           </li>
         )
       })}
