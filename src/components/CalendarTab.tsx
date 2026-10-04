@@ -5,7 +5,9 @@ import { ArrowUpDown } from "lucide-react"
 import { GameCalendar } from "@/components/GameCalendar"
 import { DataTable } from "@/components/DataTable"
 import { Button } from "@/components/Button"
+import { DayGroupedList } from "@/components/DayGroupedList"
 import { gamePath, type GameSummary } from "@/lib/data"
+import { compareNewest, shortGameName } from "@/lib/gameList"
 import { isSameDay } from "@/lib/utils"
 
 const columns: ColumnDef<GameSummary>[] = [
@@ -58,6 +60,9 @@ const columns: ColumnDef<GameSummary>[] = [
   },
 ]
 
+const gameDate = (game: GameSummary) => game.date
+const gameKey = (game: GameSummary) => `${game.spreadsheetId}/${game.gid}`
+
 interface CalendarTabProps {
   games: GameSummary[]
 }
@@ -65,6 +70,8 @@ interface CalendarTabProps {
 export function CalendarTab({ games }: CalendarTabProps) {
   const navigate = useNavigate()
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
+
+  const sortedGames = useMemo(() => [...games].sort(compareNewest), [games])
 
   const gameDates = useMemo(
     () =>
@@ -75,11 +82,11 @@ export function CalendarTab({ games }: CalendarTabProps) {
   )
 
   const filteredGames = useMemo(() => {
-    if (!selectedDate) return games
-    return games.filter(
+    if (!selectedDate) return sortedGames
+    return sortedGames.filter(
       (g) => g.date !== null && isSameDay(g.date, selectedDate)
     )
-  }, [games, selectedDate])
+  }, [sortedGames, selectedDate])
 
   const emptyMessage = selectedDate
     ? `No games played on ${selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.`
@@ -87,15 +94,15 @@ export function CalendarTab({ games }: CalendarTabProps) {
 
   return (
     <div>
-      <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-12">
-        <div className="md:shrink-0">
+      <div className="hidden md:flex md:flex-row md:items-start md:gap-12">
+        <div className="shrink-0">
           <GameCalendar
             gameDates={gameDates}
             selectedDate={selectedDate}
             onSelectedDateChange={setSelectedDate}
           />
         </div>
-        <div className="hidden overflow-hidden rounded-lg border bg-card w-full h-min md:block">
+        <div className="overflow-hidden rounded-lg border bg-card w-full h-min">
           <DataTable
             columns={columns}
             data={filteredGames}
@@ -103,26 +110,28 @@ export function CalendarTab({ games }: CalendarTabProps) {
             onRowClick={(game) => navigate(gamePath(game.spreadsheetId, game.gid))}
           />
         </div>
-        <ul className="overflow-hidden rounded-lg border bg-card md:hidden">
-          {filteredGames.length === 0 && (
-            <li className="p-6 text-center text-sm">{emptyMessage}</li>
-          )}
-          {filteredGames.map((game) => (
-            <li key={`${game.spreadsheetId}/${game.gid}`} className="odd:bg-muted/30">
-              <button
-                type="button"
-                onClick={() => navigate(gamePath(game.spreadsheetId, game.gid))}
-                className="flex min-h-14 w-full flex-col gap-0.5 px-4 py-3 text-left active:bg-muted/50"
-              >
-                <span className="font-medium break-words">{game.name}</span>
-                <span className="text-sm text-muted-foreground">
-                  {game.winner} won with {game.winnerScore} · {game.playerCount} players
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
       </div>
+      <DayGroupedList
+        className="md:hidden"
+        items={sortedGames}
+        getDate={gameDate}
+        getKey={gameKey}
+        onSelect={(game) => navigate(gamePath(game.spreadsheetId, game.gid))}
+        summary={`${games.length} ${games.length === 1 ? "game" : "games"} · newest first`}
+        emptyMessage="No games submitted."
+        renderItem={(game) => (
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="font-medium break-words text-foreground">
+              {shortGameName(game.name, game.date)}
+            </span>
+            <span className="text-sm text-foreground/70">
+              <span className="font-semibold text-foreground">{game.winner}</span>{" "}
+              won with <span className="tabular-nums">{game.winnerScore}</span> ·{" "}
+              {game.playerCount} players
+            </span>
+          </span>
+        )}
+      />
     </div>
   )
 }
