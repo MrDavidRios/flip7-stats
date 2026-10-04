@@ -61,7 +61,7 @@ describe("parseTabData", () => {
   });
 
   it("returns empty for empty input", () => {
-    expect(parseTabData([])).toEqual({ headers: [], rows: [] });
+    expect(parseTabData([])).toEqual({ headers: [], rows: [], notes: [] });
   });
 
   it("handles data starting at row 1 (no header row above)", () => {
@@ -120,6 +120,40 @@ describe("parseTabData", () => {
 
     expect(result.headers).toEqual(["Player", "Total"]);
     expect(result.rows).toEqual([["Alice", "50"]]);
+  });
+
+  it("treats rows spaced out below the table as notes", () => {
+    const result = parseTabData([
+      ["", "", "Round"],
+      ["Player", "Total", "1", "2"],
+      ["Abel", "54", "32", "22"],
+      ["Jered", "47", "26", "21"],
+      [],
+      ["Note: house rule - x2 for 7 numeric cards"],
+      ["", ""],
+      ["", "second note", "", "continued"],
+    ]);
+
+    expect(result.headers).toEqual(["Player", "Total", "Round 1", "Round 2"]);
+    expect(result.rows).toEqual([
+      ["Abel", "54", "32", "22"],
+      ["Jered", "47", "26", "21"],
+    ]);
+    expect(result.notes).toEqual([
+      "Note: house rule - x2 for 7 numeric cards",
+      "second note continued",
+    ]);
+  });
+
+  it("returns no notes when the table has none", () => {
+    const result = parseTabData([
+      ["Player", "Total"],
+      ["Alice", "50"],
+      [],
+    ]);
+
+    expect(result.rows).toEqual([["Alice", "50"]]);
+    expect(result.notes).toEqual([]);
   });
 });
 
@@ -182,6 +216,7 @@ describe("fetchAllSheets", () => {
       gid: 100,
       headers: [],
       rows: [],
+      notes: [],
     });
   });
 

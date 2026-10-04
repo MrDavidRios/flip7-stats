@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
-import { ArrowLeft, ChevronRight, Trophy } from "lucide-react"
+import { ArrowLeft, ChevronRight, StickyNote, Trophy } from "lucide-react"
 import { Button } from "@/components/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card"
 import { GameTable } from "@/components/GameTable"
@@ -113,7 +113,34 @@ export function GameDetailView({ data }: GameDetailViewProps) {
         </div>
         <RoundGrid game={game} />
       </div>
+
+      <Notes notes={game.tab.notes ?? []} />
     </div>
+  )
+}
+
+/** Free-text notes from below the sheet's table, one card each. */
+function Notes({ notes }: { notes: string[] }) {
+  if (notes.length === 0) return null
+
+  return (
+    <section>
+      <h3 className="text-lg font-semibold mb-3 md:mb-4">Notes</h3>
+      <ul className="grid gap-3 md:grid-cols-2 md:gap-4">
+        {notes.map((note, i) => (
+          <li key={i}>
+            <Card className="h-full">
+              <CardContent className="flex gap-3">
+                <StickyNote aria-hidden className="mt-0.5 size-4 shrink-0 text-foreground/50" />
+                <p className="whitespace-pre-line text-sm leading-relaxed">
+                  {note.replace(/^note\s*:\s*/i, "")}
+                </p>
+              </CardContent>
+            </Card>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 

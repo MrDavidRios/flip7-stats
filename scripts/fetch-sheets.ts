@@ -18,6 +18,7 @@ export interface Config {
 export interface TabData {
   headers: string[];
   rows: string[][];
+  notes: string[];
 }
 
 export interface GameTab extends TabData {
@@ -56,8 +57,35 @@ function isNumeric(value: unknown): boolean {
   return typeof value === "string" && value !== "" && !isNaN(Number(value));
 }
 
+function toCells(row: unknown[]): string[] {
+  return row.map((c) => String(c ?? ""));
+}
+
+/**
+ * Splits table rows from notes: the table ends at the first blank row, and any
+ * non-blank rows spaced out below it are free-text notes (their cells joined).
+ */
+function splitNotes(values: unknown[][]): { rows: string[][]; notes: string[] } {
+  const isBlank = (r: unknown[]) => r.every((c) => String(c ?? "").trim() === "");
+  const end = values.findIndex(isBlank);
+  if (end === -1) return { rows: values.map(toCells), notes: [] };
+
+  return {
+    rows: values.slice(0, end).map(toCells),
+    notes: values
+      .slice(end)
+      .filter((r) => !isBlank(r))
+      .map((r) =>
+        toCells(r)
+          .map((c) => c.trim())
+          .filter((c) => c !== "")
+          .join(" ")
+      ),
+  };
+}
+
 export function parseTabData(values: unknown[][]): TabData {
-  if (values.length === 0) return { headers: [], rows: [] };
+  if (values.length === 0) return { headers: [], rows: [], notes: [] };
 
   let dataStartIndex = -1;
   for (let i = 0; i < values.length; i++) {
@@ -73,15 +101,10 @@ export function parseTabData(values: unknown[][]): TabData {
 
   if (dataStartIndex === -1) {
     const [first, ...rest] = values;
-    return {
-      headers: (first as string[]).map((h) => String(h ?? "")),
-      rows: rest.map((r) => (r as string[]).map((c) => String(c ?? ""))),
-    };
+    return { headers: toCells(first), ...splitNotes(rest) };
   }
 
-  const rows = values.slice(dataStartIndex).map((r) =>
-    (r as string[]).map((c) => String(c ?? ""))
-  );
+  const { rows, notes } = splitNotes(values.slice(dataStartIndex));
 
   const numCols = Math.max(...rows.map((r) => r.length));
   const headers = ["Player", "Total"];
@@ -89,7 +112,7 @@ export function parseTabData(values: unknown[][]): TabData {
     headers.push(`Round ${i - 1}`);
   }
 
-  return { headers, rows };
+  return { headers, rows, notes };
 }
 
 export async function fetchAllSheets(
