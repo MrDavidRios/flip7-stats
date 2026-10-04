@@ -131,7 +131,7 @@ function Notes({ notes }: { notes: string[] }) {
           <li key={i}>
             <Card className="h-full">
               <CardContent className="flex gap-3">
-                <StickyNote aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+                <StickyNote aria-hidden className="mt-0.5 size-4 shrink-0 text-foreground/50" />
                 <p className="whitespace-pre-line text-sm leading-relaxed">
                   {note.replace(/^note\s*:\s*/i, "")}
                 </p>
