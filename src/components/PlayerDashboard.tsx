@@ -2,7 +2,7 @@ import { useMemo, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import type { ColumnDef } from "@tanstack/react-table"
 import { ArrowLeft, ArrowUpDown } from "lucide-react"
-import { Calendar } from "@/components/Calendar"
+import { GameCalendar } from "@/components/GameCalendar"
 import { DataTable } from "@/components/DataTable"
 import { Button } from "@/components/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card"
@@ -174,22 +174,10 @@ export function PlayerDashboard({ data }: PlayerDashboardProps) {
         <h3 className="text-lg font-semibold mb-4">Game History</h3>
         <div className="flex gap-12">
           <div className="shrink-0">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) =>
-                setSelectedDate(
-                  date && selectedDate && isSameDay(date, selectedDate)
-                    ? undefined
-                    : date
-                )
-              }
-              disabled={{ after: new Date() }}
-              modifiers={{ hasGames: gameDates }}
-              modifiersClassNames={{
-                hasGames:
-                  "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1 after:rounded-full after:bg-primary",
-              }}
+            <GameCalendar
+              gameDates={gameDates}
+              selectedDate={selectedDate}
+              onSelectedDateChange={setSelectedDate}
             />
           </div>
           <div className="overflow-hidden rounded-lg border bg-card w-full h-min">
