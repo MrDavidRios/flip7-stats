@@ -3,9 +3,14 @@ export interface TabData {
   rows: string[][]
 }
 
+export interface GameTab extends TabData {
+  gid: number
+}
+
 export interface SpreadsheetData {
+  id: string
   label: string
-  games: Record<string, TabData>
+  games: Record<string, GameTab>
 }
 
 export interface Data {
@@ -20,7 +25,8 @@ export interface PlayerSummary {
 }
 
 export interface GameSummary {
-  index: number
+  spreadsheetId: string
+  gid: number
   name: string
   spreadsheetLabel: string
   playerCount: number
@@ -42,18 +48,23 @@ export interface GameDetail {
   }[]
 }
 
+export function gamePath(spreadsheetId: string, gid: number): string {
+  return `/games/${encodeURIComponent(spreadsheetId)}/${gid}`
+}
+
 export function getGameDetail(
   data: Data,
-  gameName: string,
-  spreadsheetLabel: string
+  spreadsheetId: string,
+  gid: number
 ): GameDetail | null {
-  const spreadsheet = data.spreadsheets.find(
-    (s) => s.label === spreadsheetLabel
-  )
+  const spreadsheet = data.spreadsheets.find((s) => s.id === spreadsheetId)
   if (!spreadsheet) return null
 
-  const tab = spreadsheet.games[gameName]
-  if (!tab) return null
+  const entry = Object.entries(spreadsheet.games).find(
+    ([, tab]) => tab.gid === gid
+  )
+  if (!entry) return null
+  const [gameName, tab] = entry
 
   const players = tab.rows
     .filter((r) => r[0])
@@ -63,7 +74,7 @@ export function getGameDetail(
 
   return {
     name: gameName,
-    spreadsheetLabel,
+    spreadsheetLabel: spreadsheet.label,
     date: parseDateFromName(gameName),
     tab,
     players,
@@ -105,6 +116,8 @@ export function getAllPlayers(data: Data): PlayerSummary[] {
 }
 
 export interface PlayerGameDetail {
+  spreadsheetId: string
+  gid: number
   gameName: string
   spreadsheetLabel: string
   date: Date | null
@@ -142,6 +155,8 @@ export function getPlayerGameDetails(
       const place = scores.findIndex((s) => s.name === playerName) + 1
 
       details.push({
+        spreadsheetId: spreadsheet.id,
+        gid: tab.gid,
         gameName,
         spreadsheetLabel: spreadsheet.label,
         date: parseDateFromName(gameName),
@@ -177,7 +192,6 @@ export function getPlayerStats(games: PlayerGameDetail[]): PlayerStats {
 
 export function getGameDates(data: Data): GameSummary[] {
   const games: GameSummary[] = []
-  let index = 0
 
   for (const spreadsheet of data.spreadsheets) {
     for (const [gameName, tab] of Object.entries(spreadsheet.games)) {
@@ -196,7 +210,8 @@ export function getGameDates(data: Data): GameSummary[] {
       }
 
       games.push({
-        index: index++,
+        spreadsheetId: spreadsheet.id,
+        gid: tab.gid,
         name: gameName,
         spreadsheetLabel: spreadsheet.label,
         playerCount: players.length,

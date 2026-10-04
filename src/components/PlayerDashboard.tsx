@@ -7,6 +7,7 @@ import { DataTable } from "@/components/DataTable"
 import { Button } from "@/components/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card"
 import {
+  gamePath,
   getPlayerGameDetails,
   getPlayerStats,
   type Data,
@@ -184,6 +185,7 @@ export function PlayerDashboard({ data }: PlayerDashboardProps) {
             <DataTable
               columns={columns}
               data={filteredGames}
+              onRowClick={(game) => navigate(gamePath(game.spreadsheetId, game.gid))}
               emptyMessage={
                 selectedDate
                   ? "No games played on this date."
