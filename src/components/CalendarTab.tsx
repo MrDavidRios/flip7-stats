@@ -102,7 +102,7 @@ export function CalendarTab({ games }: CalendarTabProps) {
             onSelectedDateChange={setSelectedDate}
           />
         </div>
-        <div className="overflow-hidden rounded-lg border bg-card w-full h-min">
+        <div className="overflow-hidden rounded-lg border border-foreground/10 bg-card w-full h-min">
           <DataTable
             columns={columns}
             data={filteredGames}
