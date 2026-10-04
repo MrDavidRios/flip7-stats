@@ -1,43 +1,43 @@
-import { useMemo } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, Trophy } from "lucide-react"
-import { Button } from "@/components/Button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card"
-import { GameTable } from "@/components/GameTable"
-import { getGameDetail, type Data } from "@/lib/data"
+import { useMemo } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { ArrowLeft, Trophy } from "lucide-react";
+import { Button } from "@/components/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card";
+import { GameTable } from "@/components/GameTable";
+import { getGameDetail, type Data } from "@/lib/data";
 
 function formatPlace(place: number): string {
-  if (place === 1) return "1st"
-  if (place === 2) return "2nd"
-  if (place === 3) return "3rd"
-  return `${place}th`
+  if (place === 1) return "1st";
+  if (place === 2) return "2nd";
+  if (place === 3) return "3rd";
+  return `${place}th`;
 }
 
 function formatDate(date: Date | null): string {
-  if (!date) return "—"
+  if (!date) return "—";
   return date.toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
     year: "numeric",
-  })
+  });
 }
 
 interface GameDetailViewProps {
-  data: Data
+  data: Data;
 }
 
 export function GameDetailView({ data }: GameDetailViewProps) {
   const { spreadsheetId, gid } = useParams<{
-    spreadsheetId: string
-    gid: string
-  }>()
-  const navigate = useNavigate()
+    spreadsheetId: string;
+    gid: string;
+  }>();
+  const navigate = useNavigate();
 
   const game = useMemo(
     () => getGameDetail(data, spreadsheetId ?? "", Number(gid)),
-    [data, spreadsheetId, gid]
-  )
+    [data, spreadsheetId, gid],
+  );
 
   if (!game) {
     return (
@@ -49,7 +49,7 @@ export function GameDetailView({ data }: GameDetailViewProps) {
           <h2 className="text-2xl font-bold">Game not found</h2>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -68,20 +68,26 @@ export function GameDetailView({ data }: GameDetailViewProps) {
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {game.players.map((player) => (
-          <Card key={player.name}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground font-normal flex items-center gap-1.5">
-                {player.place === 1 && <Trophy className="size-3.5" />}
-                {formatPlace(player.place)}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xl font-bold">{player.name}</p>
-              <p className="text-sm text-muted-foreground">
-                {player.score} points
-              </p>
-            </CardContent>
-          </Card>
+          <Link
+            key={player.name}
+            to={`/players/${encodeURIComponent(player.name)}`}
+            className="no-underline"
+          >
+            <Card className="cursor-pointer transition-colors hover:brightness-95 h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground font-normal flex items-center gap-1.5">
+                  {player.place === 1 && <Trophy className="size-3.5" />}
+                  {formatPlace(player.place)}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xl font-bold">{player.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {player.score} points
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
@@ -90,5 +96,5 @@ export function GameDetailView({ data }: GameDetailViewProps) {
         <GameTable game={game.tab} />
       </div>
     </div>
-  )
+  );
 }
