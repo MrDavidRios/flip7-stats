@@ -121,7 +121,7 @@ function Standings({ game }: { game: GameDetail }) {
   const top = game.players[0]?.score || 1
 
   return (
-    <ol className="divide-y divide-foreground/10 rounded-lg border bg-card md:hidden">
+    <ol className="divide-y divide-foreground/10 rounded-lg border border-foreground/10 bg-card md:hidden">
       {game.players.map((player) => {
         const won = player.place === 1
         return (
@@ -180,11 +180,11 @@ function RoundGrid({ game }: { game: GameDetail }) {
   }, [game])
 
   return (
-    <div className="rounded-lg border bg-card md:hidden">
+    <div className="rounded-lg border border-foreground/10 bg-card md:hidden">
       <table className="w-full table-fixed border-separate border-spacing-0 text-sm tabular-nums">
         <thead>
           <tr>
-            <th scope="col" className="sticky top-0 z-10 w-11 rounded-tl-lg border-b bg-muted px-2 py-2.5 text-left text-xs font-medium text-foreground/70">
+            <th scope="col" className="sticky top-0 z-10 w-11 rounded-tl-lg border-b border-foreground/10 bg-muted px-2 py-2.5 text-left text-xs font-medium text-foreground/70">
               <abbr title="Round" className="no-underline">Rd</abbr>
             </th>
             {columns.map((c, i) => (
@@ -193,7 +193,7 @@ function RoundGrid({ game }: { game: GameDetail }) {
                 scope="col"
                 title={c.name}
                 className={cn(
-                  "sticky top-0 z-10 truncate border-b bg-muted px-1 py-2.5 text-right text-xs font-semibold text-foreground",
+                  "sticky top-0 z-10 truncate border-b border-foreground/10 bg-muted px-1 py-2.5 text-right text-xs font-semibold text-foreground",
                   i === columns.length - 1 && "rounded-tr-lg pr-3"
                 )}
               >

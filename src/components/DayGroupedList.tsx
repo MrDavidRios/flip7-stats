@@ -75,7 +75,7 @@ export function DayGroupedList<T>({
       </div>
 
       {groups.length === 0 && (
-        <p className="rounded-lg border bg-card p-6 text-center text-sm">
+        <p className="rounded-lg border border-foreground/10 bg-card p-6 text-center text-sm">
           {emptyMessage}
         </p>
       )}
@@ -87,13 +87,13 @@ export function DayGroupedList<T>({
             id={`day-${group.key}`}
             aria-labelledby={`day-${group.key}-label`}
             className={cn(
-              "scroll-mt-2 rounded-lg border bg-card ring-0 ring-primary/50 transition-shadow duration-500",
+              "scroll-mt-2 rounded-lg border border-foreground/10 bg-card ring-0 ring-primary/50 transition-shadow duration-500",
               highlightedKey === group.key && "ring-2"
             )}
           >
             <h3
               id={`day-${group.key}-label`}
-              className="sticky top-0 z-10 flex h-10 items-center justify-between rounded-t-lg border-b bg-muted px-4 text-sm font-semibold text-foreground"
+              className="sticky top-0 z-10 flex h-10 items-center justify-between rounded-t-lg border-b border-foreground/10 bg-muted px-4 text-sm font-semibold text-foreground"
             >
               <span>
                 {group.date

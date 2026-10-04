@@ -173,7 +173,7 @@ export function PlayerDashboard({ data }: PlayerDashboardProps) {
         </div>
       </div>
 
-      <dl className="grid grid-cols-2 rounded-lg border bg-card md:hidden">
+      <dl className="grid grid-cols-2 rounded-lg border border-foreground/10 bg-card md:hidden">
         {[
           { label: "Avg / game", value: stats.avgPoints.toFixed(1) },
           { label: "Total points", value: stats.totalPoints.toLocaleString() },

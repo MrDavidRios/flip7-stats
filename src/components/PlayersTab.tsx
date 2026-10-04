@@ -66,7 +66,7 @@ export function PlayersTab({ players }: PlayersTabProps) {
         </div>
       </div>
 
-      <ol className="divide-y divide-foreground/10 rounded-lg border bg-card md:hidden">
+      <ol className="divide-y divide-foreground/10 rounded-lg border border-foreground/10 bg-card md:hidden">
         {sorted.map((player, i) => (
           <li key={player.name} className="first:*:rounded-t-lg last:*:rounded-b-lg">
             <Link
