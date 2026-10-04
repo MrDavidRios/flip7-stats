@@ -1,6 +1,8 @@
 export interface TabData {
   headers: string[]
   rows: string[][]
+  /** Free-text rows spaced out below the table. Absent in older data files. */
+  notes?: string[]
 }
 
 export interface GameTab extends TabData {
@@ -50,9 +52,9 @@ export interface GameDetail {
 }
 
 /**
- * The player rows of a game tab, with trimmed names. Sheets sometimes carry
- * free-text notes ("Note: house rule ...") in the player column; those are
- * not players and are skipped.
+ * The player rows of a game tab, with trimmed names. Notes are split out of
+ * the rows when the sheets are fetched, but older data files still carry them
+ * ("Note: house rule ...") in the player column; those are skipped.
  */
 export function playerRows(tab: TabData): { name: string; score: number; row: string[] }[] {
   return tab.rows
