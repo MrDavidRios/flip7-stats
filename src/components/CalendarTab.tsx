@@ -2,11 +2,11 @@ import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import type { ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown } from "lucide-react"
-import { Calendar } from "@/components/Calendar"
+import { GameCalendar } from "@/components/GameCalendar"
 import { DataTable } from "@/components/DataTable"
 import { Button } from "@/components/Button"
 import type { GameSummary } from "@/lib/data"
-import { cn, isSameDay } from "@/lib/utils"
+import { isSameDay } from "@/lib/utils"
 
 const columns: ColumnDef<GameSummary>[] = [
   {
@@ -74,16 +74,6 @@ export function CalendarTab({ games }: CalendarTabProps) {
     [games]
   )
 
-  const latestGameDate = useMemo(
-    () =>
-      gameDates.length
-        ? new Date(Math.max(...gameDates.map((d) => d.getTime())))
-        : undefined,
-    [gameDates]
-  )
-
-  const [month, setMonth] = useState<Date>(() => latestGameDate ?? new Date())
-
   const filteredGames = useMemo(() => {
     if (!selectedDate) return games
     return games.filter(
@@ -99,40 +89,10 @@ export function CalendarTab({ games }: CalendarTabProps) {
     <div>
       <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-12">
         <div className="md:shrink-0">
-          <Calendar
-            mode="single"
-            startMonth={
-              gameDates.length
-                ? new Date(Math.min(...gameDates.map((d) => d.getTime())))
-                : undefined
-            }
-            endMonth={latestGameDate}
-            month={month}
-            onMonthChange={setMonth}
-            components={{
-              CaptionLabel: ({ children, className }) => (
-                <button
-                  type="button"
-                  className={cn(
-                    className,
-                    "cursor-pointer rounded-md px-2 py-1 hover:bg-muted/60"
-                  )}
-                  title="Go to latest month"
-                  onClick={() => setMonth(latestGameDate ?? new Date())}
-                >
-                  {children}
-                </button>
-              ),
-            }}
-            selected={selectedDate}
-            onSelect={(date) =>
-              setSelectedDate(
-                date && selectedDate && isSameDay(date, selectedDate)
-                  ? undefined
-                  : date
-              )
-            }
-            disabled={(date) => !gameDates.some((d) => isSameDay(d, date))}
+          <GameCalendar
+            gameDates={gameDates}
+            selectedDate={selectedDate}
+            onSelectedDateChange={setSelectedDate}
           />
         </div>
         <div className="hidden overflow-hidden rounded-lg border bg-card w-full h-min md:block">
