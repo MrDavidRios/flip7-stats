@@ -7,12 +7,14 @@ interface GameCalendarProps {
   gameDates: Date[]
   selectedDate: Date | undefined
   onSelectedDateChange: (date: Date | undefined) => void
+  className?: string
 }
 
 export function GameCalendar({
   gameDates,
   selectedDate,
   onSelectedDateChange,
+  className,
 }: GameCalendarProps) {
   const firstGameDate = useMemo(
     () =>
@@ -35,6 +37,7 @@ export function GameCalendar({
   return (
     <Calendar
       mode="single"
+      className={cn("pointer-coarse:[--cell-size:--spacing(11)]", className)}
       startMonth={firstGameDate}
       endMonth={latestGameDate}
       month={month}
@@ -55,7 +58,14 @@ export function GameCalendar({
         PreviousMonthButton: (props) =>
           props["aria-disabled"] ? (
             <Tooltip>
-              <TooltipTrigger render={<button {...props} />} />
+              <TooltipTrigger
+                render={
+                  <button
+                    {...props}
+                    className={cn(props.className, "pointer-coarse:invisible")}
+                  />
+                }
+              />
               <TooltipContent>No earlier games</TooltipContent>
             </Tooltip>
           ) : (
@@ -64,7 +74,14 @@ export function GameCalendar({
         NextMonthButton: (props) =>
           props["aria-disabled"] ? (
             <Tooltip>
-              <TooltipTrigger render={<button {...props} />} />
+              <TooltipTrigger
+                render={
+                  <button
+                    {...props}
+                    className={cn(props.className, "pointer-coarse:invisible")}
+                  />
+                }
+              />
               <TooltipContent>No later games</TooltipContent>
             </Tooltip>
           ) : (

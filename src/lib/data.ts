@@ -22,6 +22,7 @@ export interface PlayerSummary {
   name: string
   gamesPlayed: number
   totalScore: number
+  avgScore: number
 }
 
 export interface GameSummary {
@@ -48,6 +49,17 @@ export interface GameDetail {
   }[]
 }
 
+/**
+ * The player rows of a game tab, with trimmed names. Sheets sometimes carry
+ * free-text notes ("Note: house rule ...") in the player column; those are
+ * not players and are skipped.
+ */
+export function playerRows(tab: TabData): { name: string; score: number; row: string[] }[] {
+  return tab.rows
+    .map((row) => ({ name: (row[0] ?? "").trim(), score: Number(row[1] ?? "0") || 0, row }))
+    .filter((p) => p.name && !/^note\b/i.test(p.name))
+}
+
 export function gamePath(spreadsheetId: string, gid: number): string {
   return `/games/${encodeURIComponent(spreadsheetId)}/${gid}`
 }
@@ -66,9 +78,8 @@ export function getGameDetail(
   if (!entry) return null
   const [gameName, tab] = entry
 
-  const players = tab.rows
-    .filter((r) => r[0])
-    .map((r) => ({ name: r[0], score: Number(r[1] ?? "0") }))
+  const players = playerRows(tab)
+    .map(({ name, score }) => ({ name, score }))
     .sort((a, b) => b.score - a.score)
     .map((p, i) => ({ ...p, place: i + 1 }))
 
@@ -98,10 +109,7 @@ export function getAllPlayers(data: Data): PlayerSummary[] {
 
   for (const spreadsheet of data.spreadsheets) {
     for (const tab of Object.values(spreadsheet.games)) {
-      for (const row of tab.rows) {
-        const name = row[0] ?? ""
-        const score = Number(row[1] ?? "0")
-        if (!name) continue
+      for (const { name, score } of playerRows(tab)) {
         const existing = map.get(name) ?? { gamesPlayed: 0, totalScore: 0 }
         existing.gamesPlayed += 1
         existing.totalScore += score
@@ -111,7 +119,11 @@ export function getAllPlayers(data: Data): PlayerSummary[] {
   }
 
   return Array.from(map.entries())
-    .map(([name, stats]) => ({ name, ...stats }))
+    .map(([name, stats]) => ({
+      name,
+      ...stats,
+      avgScore: stats.gamesPlayed > 0 ? stats.totalScore / stats.gamesPlayed : 0,
+    }))
     .sort((a, b) => b.totalScore - a.totalScore)
 }
 
@@ -143,15 +155,11 @@ export function getPlayerGameDetails(
 
   for (const spreadsheet of data.spreadsheets) {
     for (const [gameName, tab] of Object.entries(spreadsheet.games)) {
-      const playerRow = tab.rows.find((r) => r[0] === playerName)
+      const scores = playerRows(tab).sort((a, b) => b.score - a.score)
+      const playerRow = scores.find((s) => s.name === playerName)
       if (!playerRow) continue
 
-      const scores = tab.rows
-        .filter((r) => r[0])
-        .map((r) => ({ name: r[0], score: Number(r[1] ?? "0") }))
-        .sort((a, b) => b.score - a.score)
-
-      const playerScore = Number(playerRow[1] ?? "0")
+      const playerScore = playerRow.score
       const place = scores.findIndex((s) => s.name === playerName) + 1
 
       details.push({
@@ -195,17 +203,17 @@ export function getGameDates(data: Data): GameSummary[] {
 
   for (const spreadsheet of data.spreadsheets) {
     for (const [gameName, tab] of Object.entries(spreadsheet.games)) {
-      if (tab.rows.length === 0) continue
+      const rows = playerRows(tab)
+      if (rows.length === 0) continue
 
-      const players = tab.rows.map((r) => r[0] ?? "").filter(Boolean)
+      const players = rows.map((r) => r.name)
       let winner = ""
       let winnerScore = -Infinity
 
-      for (const row of tab.rows) {
-        const score = Number(row[1] ?? "0")
+      for (const { name, score } of rows) {
         if (score > winnerScore) {
           winnerScore = score
-          winner = row[0] ?? ""
+          winner = name
         }
       }
 

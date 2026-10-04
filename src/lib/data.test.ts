@@ -5,6 +5,7 @@ import {
   getGameDates,
   getGameDetail,
   getPlayerGameDetails,
+  playerRows,
   type Data,
 } from "./data"
 
@@ -45,11 +46,21 @@ describe("getAllPlayers", () => {
   it("returns unique players across all spreadsheets with game counts and total scores", () => {
     const players = getAllPlayers(sampleData)
     expect(players).toEqual([
-      { name: "Alice", gamesPlayed: 2, totalScore: 15 },
-      { name: "Charlie", gamesPlayed: 1, totalScore: 12 },
-      { name: "Bob", gamesPlayed: 2, totalScore: 10 },
-      { name: "Diana", gamesPlayed: 1, totalScore: 9 },
+      { name: "Alice", gamesPlayed: 2, totalScore: 15, avgScore: 7.5 },
+      { name: "Charlie", gamesPlayed: 1, totalScore: 12, avgScore: 12 },
+      { name: "Bob", gamesPlayed: 2, totalScore: 10, avgScore: 5 },
+      { name: "Diana", gamesPlayed: 1, totalScore: 9, avgScore: 9 },
     ])
+  })
+})
+
+describe("playerRows", () => {
+  it("trims names and skips note rows in the player column", () => {
+    const rows = playerRows({
+      headers: ["Player", "Total"],
+      rows: [["John ", "37"], ["Note: house rule - x2", "0"], ["", ""], ["Ann", ""]],
+    })
+    expect(rows.map((r) => [r.name, r.score])).toEqual([["John", 37], ["Ann", 0]])
   })
 })
 

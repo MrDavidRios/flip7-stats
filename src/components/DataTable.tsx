@@ -63,7 +63,7 @@ export function DataTable<TData, TValue>({
           table.getRowModel().rows.map((row) => (
             <TableRow
               key={row.id}
-              className={onRowClick ? "cursor-pointer hover:brightness-95" : undefined}
+              className={onRowClick ? "cursor-pointer hover:brightness-95 active:brightness-90" : undefined}
               onClick={() => onRowClick?.(row.original)}
             >
               {row.getVisibleCells().map((cell) => (
