@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/Table"
+import { cn } from "@/lib/utils"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -41,12 +42,15 @@ export function DataTable<TData, TValue>({
   })
 
   return (
-    <Table>
+    <Table className="tabular-nums">
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow key={headerGroup.id}>
+          <TableRow key={headerGroup.id} className="odd:bg-muted hover:bg-muted">
             {headerGroup.headers.map((header) => (
-              <TableHead key={header.id}>
+              <TableHead
+                key={header.id}
+                className="border-b border-foreground/10 px-3 text-xs text-foreground/70 [&_button]:text-xs"
+              >
                 {header.isPlaceholder
                   ? null
                   : flexRender(
@@ -63,11 +67,14 @@ export function DataTable<TData, TValue>({
           table.getRowModel().rows.map((row) => (
             <TableRow
               key={row.id}
-              className={onRowClick ? "cursor-pointer hover:brightness-95 active:brightness-90" : undefined}
+              className={cn(
+                "odd:bg-transparent even:bg-foreground/[0.03] hover:bg-foreground/[0.06]",
+                onRowClick && "cursor-pointer active:bg-foreground/[0.09]"
+              )}
               onClick={() => onRowClick?.(row.original)}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell key={cell.id} className="px-3">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}
