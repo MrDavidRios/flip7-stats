@@ -79,9 +79,9 @@ export function PlayersTab({ players }: PlayersTabProps) {
             >
               <Link
                 to={playerPath(player.name)}
-                className="flex min-h-14 items-center gap-3 px-4 py-2.5 text-foreground no-underline hover:bg-muted/60 active:bg-muted/60"
+                className="flex min-h-14 items-center gap-3 pl-2 pr-4 py-2.5 text-foreground no-underline hover:bg-muted/60 active:bg-muted/60"
               >
-                <span className="w-6 shrink-0 text-right text-sm tabular-nums text-foreground/60">
+                <span className="w-6 shrink-0 text-center text-sm tabular-nums text-foreground/60">
                   {i + 1}
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col">
