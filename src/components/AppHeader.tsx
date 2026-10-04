@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 
 interface AppHeaderProps {
   fetchedAt: string
@@ -35,9 +36,13 @@ export function AppHeader({ fetchedAt }: AppHeaderProps) {
 
   return (
     <header className="mb-5 flex items-center justify-between gap-4 md:mb-7">
-      <p className="flex items-center font-florence text-2xl tracking-tight text-foreground md:text-[1.75rem]">
+      <Link
+        to="/"
+        aria-label="Flip 7 Stats home"
+        className="flex items-center rounded-md font-florence text-2xl tracking-tight text-foreground no-underline focus-visible:outline-2 focus-visible:outline-offset-4 md:text-[1.75rem]"
+      >
         FLIP<span className="-ml-2 mr-1 pr-2 text-4xl italic md:text-[2.75rem]">7</span> STATS
-      </p>
+      </Link>
       {updated && (
         <time
           dateTime={fetchedAt}
