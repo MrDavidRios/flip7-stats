@@ -6,6 +6,7 @@ import { CalendarTab } from "@/components/CalendarTab"
 import { PlayersTab } from "@/components/PlayersTab"
 import { PlayerDashboard } from "@/components/PlayerDashboard"
 import { GameDetailView } from "@/components/GameDetailView"
+import { TooltipProvider } from "@/components/Tooltip"
 import { getAllPlayers, getGameDates, type Data } from "@/lib/data"
 import { cn } from "@/lib/utils"
 
@@ -66,38 +67,40 @@ function App() {
   }
 
   return (
-    <div className="container">
-      <AppHeader fetchedAt={data.fetchedAt} />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <>
-              <TabNav />
-              <CalendarTab games={games} />
-            </>
-          }
-        />
-        <Route
-          path="/players"
-          element={
-            <>
-              <TabNav />
-              <PlayersTab players={players} />
-            </>
-          }
-        />
-        <Route
-          path="/players/:name"
-          element={<PlayerDashboard data={data} />}
-        />
-        <Route
-          path="/games/:spreadsheetId/:gid"
-          element={<GameDetailView data={data} />}
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </div>
+    <TooltipProvider>
+      <div className="container">
+        <AppHeader fetchedAt={data.fetchedAt} />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <TabNav />
+                <CalendarTab games={games} />
+              </>
+            }
+          />
+          <Route
+            path="/players"
+            element={
+              <>
+                <TabNav />
+                <PlayersTab players={players} />
+              </>
+            }
+          />
+          <Route
+            path="/players/:name"
+            element={<PlayerDashboard data={data} />}
+          />
+          <Route
+            path="/games/:spreadsheetId/:gid"
+            element={<GameDetailView data={data} />}
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </TooltipProvider>
   )
 }
 
