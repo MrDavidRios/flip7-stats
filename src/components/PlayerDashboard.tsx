@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import type { ColumnDef } from "@tanstack/react-table"
-import { ArrowLeft, ArrowUpDown } from "lucide-react"
+import { ArrowLeft, ArrowUpDown, Trophy } from "lucide-react"
 import { GameCalendar } from "@/components/GameCalendar"
 import { DataTable } from "@/components/DataTable"
+import { DayGroupedList } from "@/components/DayGroupedList"
 import { Button } from "@/components/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card"
 import {
@@ -13,6 +14,7 @@ import {
   type Data,
   type PlayerGameDetail,
 } from "@/lib/data"
+import { compareNewest, shortGameName } from "@/lib/gameList"
 import { isSameDay } from "@/lib/utils"
 
 function formatPlace(place: number): string {
@@ -88,6 +90,39 @@ const columns: ColumnDef<PlayerGameDetail>[] = [
   },
 ]
 
+const historyDate = (game: PlayerGameDetail) => game.date
+const historyKey = (game: PlayerGameDetail) => `${game.spreadsheetId}/${game.gid}`
+const byNewestGame = (a: PlayerGameDetail, b: PlayerGameDetail) =>
+  compareNewest({ date: a.date, name: a.gameName }, { date: b.date, name: b.gameName })
+
+function HistoryRow({ game }: { game: PlayerGameDetail }) {
+  return (
+    <>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="font-medium break-words text-foreground">
+          {shortGameName(game.gameName, game.date)}
+        </span>
+        <span className="flex items-center gap-1 text-sm text-foreground/70">
+          {game.won ? (
+            <>
+              <Trophy aria-hidden className="size-3.5 text-foreground" />
+              <span className="font-semibold text-foreground">Won</span> · {game.playerCount} players
+            </>
+          ) : (
+            <>
+              {formatPlace(game.place)} of {game.playerCount}
+            </>
+          )}
+        </span>
+      </span>
+      <span className="shrink-0 text-right">
+        <span className="block font-semibold tabular-nums text-foreground">{game.playerScore}</span>
+        <span className="block text-xs text-foreground/70">pts</span>
+      </span>
+    </>
+  )
+}
+
 interface PlayerDashboardProps {
   data: Data
 }
@@ -104,6 +139,7 @@ export function PlayerDashboard({ data }: PlayerDashboardProps) {
   )
 
   const stats = useMemo(() => getPlayerStats(games), [games])
+  const newestFirst = useMemo(() => [...games].sort(byNewestGame), [games])
 
   const gameDates = useMemo(
     () => games.map((g) => g.date).filter((d): d is Date => d !== null),
@@ -119,14 +155,51 @@ export function PlayerDashboard({ data }: PlayerDashboardProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+      <div className="-ml-2 flex items-center gap-1 md:ml-0 md:gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Back"
+          className="size-11 shrink-0 md:size-8"
+          onClick={() => navigate(-1)}
+        >
           <ArrowLeft className="size-5" />
         </Button>
-        <h2 className="text-2xl font-bold">{playerName}</h2>
+        <div className="min-w-0">
+          <h2 className="truncate text-xl font-bold md:text-2xl">{playerName}</h2>
+          <p className="text-sm text-muted-foreground md:hidden">
+            {stats.gamesPlayed} {stats.gamesPlayed === 1 ? "game" : "games"} played
+          </p>
+        </div>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <dl className="grid grid-cols-2 rounded-lg border bg-card md:hidden">
+        {[
+          { label: "Avg / game", value: stats.avgPoints.toFixed(1) },
+          { label: "Total points", value: stats.totalPoints.toLocaleString() },
+          { label: "Wins", value: stats.gamesWon, detail: `of ${stats.gamesPlayed}` },
+          { label: "Win rate", value: `${stats.winPct.toFixed(0)}%` },
+        ].map((stat, i) => (
+          <div
+            key={stat.label}
+            className={
+              "flex flex-col gap-0.5 px-4 py-3 border-foreground/10 " +
+              (i % 2 === 0 ? "border-r " : "") +
+              (i < 2 ? "border-b" : "")
+            }
+          >
+            <dt className="text-xs text-foreground/70">{stat.label}</dt>
+            <dd className="text-xl font-bold tabular-nums text-foreground">
+              {stat.value}
+              {stat.detail && (
+                <span className="ml-1 text-sm font-normal text-foreground/70">{stat.detail}</span>
+              )}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground font-normal">
@@ -172,8 +245,18 @@ export function PlayerDashboard({ data }: PlayerDashboardProps) {
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold mb-4">Game History</h3>
-        <div className="flex gap-12">
+        <h3 className="text-lg font-semibold mb-3 md:mb-4">Game History</h3>
+        <DayGroupedList
+          className="md:hidden"
+          items={newestFirst}
+          getDate={historyDate}
+          getKey={historyKey}
+          onSelect={(game) => navigate(gamePath(game.spreadsheetId, game.gid))}
+          summary="Newest first"
+          emptyMessage="No games found."
+          renderItem={(game) => <HistoryRow game={game} />}
+        />
+        <div className="hidden gap-12 md:flex">
           <div className="shrink-0">
             <GameCalendar
               gameDates={gameDates}
