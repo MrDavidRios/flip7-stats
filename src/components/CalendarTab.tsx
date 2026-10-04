@@ -5,7 +5,7 @@ import { ArrowUpDown } from "lucide-react"
 import { Calendar } from "@/components/Calendar"
 import { DataTable } from "@/components/DataTable"
 import { Button } from "@/components/Button"
-import type { GameSummary } from "@/lib/data"
+import { gamePath, type GameSummary } from "@/lib/data"
 import { cn, isSameDay } from "@/lib/utils"
 
 const columns: ColumnDef<GameSummary>[] = [
@@ -140,7 +140,7 @@ export function CalendarTab({ games }: CalendarTabProps) {
             columns={columns}
             data={filteredGames}
             emptyMessage={emptyMessage}
-            onRowClick={(game) => navigate(`/games/${game.index}`)}
+            onRowClick={(game) => navigate(gamePath(game.spreadsheetId, game.gid))}
           />
         </div>
         <ul className="overflow-hidden rounded-lg border bg-card md:hidden">
@@ -148,10 +148,10 @@ export function CalendarTab({ games }: CalendarTabProps) {
             <li className="p-6 text-center text-sm">{emptyMessage}</li>
           )}
           {filteredGames.map((game) => (
-            <li key={game.index} className="odd:bg-muted/30">
+            <li key={`${game.spreadsheetId}/${game.gid}`} className="odd:bg-muted/30">
               <button
                 type="button"
-                onClick={() => navigate(`/games/${game.index}`)}
+                onClick={() => navigate(gamePath(game.spreadsheetId, game.gid))}
                 className="flex min-h-14 w-full flex-col gap-0.5 px-4 py-3 text-left active:bg-muted/50"
               >
                 <span className="font-medium break-words">{game.name}</span>

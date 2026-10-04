@@ -4,7 +4,7 @@ import { ArrowLeft, Trophy } from "lucide-react"
 import { Button } from "@/components/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Card"
 import { GameTable } from "@/components/GameTable"
-import { getGameDetail, type Data, type GameSummary } from "@/lib/data"
+import { getGameDetail, type Data } from "@/lib/data"
 
 function formatPlace(place: number): string {
   if (place === 1) return "1st"
@@ -25,21 +25,18 @@ function formatDate(date: Date | null): string {
 
 interface GameDetailViewProps {
   data: Data
-  games: GameSummary[]
 }
 
-export function GameDetailView({ data, games }: GameDetailViewProps) {
-  const { index } = useParams<{ index: string }>()
+export function GameDetailView({ data }: GameDetailViewProps) {
+  const { spreadsheetId, gid } = useParams<{
+    spreadsheetId: string
+    gid: string
+  }>()
   const navigate = useNavigate()
 
-  const gameSummary = games.find((g) => g.index === Number(index))
-
   const game = useMemo(
-    () =>
-      gameSummary
-        ? getGameDetail(data, gameSummary.name, gameSummary.spreadsheetLabel)
-        : null,
-    [data, gameSummary]
+    () => getGameDetail(data, spreadsheetId ?? "", Number(gid)),
+    [data, spreadsheetId, gid]
   )
 
   if (!game) {

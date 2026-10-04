@@ -92,8 +92,8 @@ function App() {
           element={<PlayerDashboard data={data} />}
         />
         <Route
-          path="/games/:index"
-          element={<GameDetailView data={data} games={games} />}
+          path="/games/:spreadsheetId/:gid"
+          element={<GameDetailView data={data} />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

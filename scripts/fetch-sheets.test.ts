@@ -11,8 +11,8 @@ function mockSheetsClient(tabs: Record<string, unknown[][]>): SheetsClient {
     spreadsheets: {
       get: vi.fn().mockResolvedValue({
         data: {
-          sheets: Object.keys(tabs).map((title) => ({
-            properties: { title },
+          sheets: Object.keys(tabs).map((title, i) => ({
+            properties: { title, sheetId: 100 + i },
           })),
         },
       }),
@@ -151,6 +151,26 @@ describe("fetchAllSheets", () => {
     ]);
   });
 
+  it("records the spreadsheet id and each tab's gid", async () => {
+    const client = mockSheetsClient({
+      "Game 1": [["Player", "Score"], ["Alice", "10"]],
+      "Game 2": [["Player", "Score"], ["Bob", "7"]],
+    });
+    const config: Config = {
+      sheets: [{ id: "sheet-123", label: "Test Sheet" }],
+    };
+
+    const results = await fetchAllSheets(client, config);
+
+    expect(client.spreadsheets.get).toHaveBeenCalledWith({
+      spreadsheetId: "sheet-123",
+      fields: "sheets.properties(title,sheetId)",
+    });
+    expect(results[0].id).toBe("sheet-123");
+    expect(results[0].games["Game 1"].gid).toBe(100);
+    expect(results[0].games["Game 2"].gid).toBe(101);
+  });
+
   it("handles empty tabs", async () => {
     const client = mockSheetsClient({ "Empty Tab": [] });
     const config: Config = {
@@ -158,7 +178,11 @@ describe("fetchAllSheets", () => {
     };
 
     const results = await fetchAllSheets(client, config);
-    expect(results[0].games["Empty Tab"]).toEqual({ headers: [], rows: [] });
+    expect(results[0].games["Empty Tab"]).toEqual({
+      gid: 100,
+      headers: [],
+      rows: [],
+    });
   });
 
   it("handles a spreadsheet with no tabs", async () => {
@@ -186,8 +210,8 @@ describe("fetchAllSheets", () => {
             ({ spreadsheetId }: { spreadsheetId: string }) => {
               const tabs =
                 spreadsheetId === "sheet-a"
-                  ? [{ properties: { title: "Round 1" } }]
-                  : [{ properties: { title: "Round 2" } }];
+                  ? [{ properties: { title: "Round 1", sheetId: 0 } }]
+                  : [{ properties: { title: "Round 2", sheetId: 0 } }];
               return Promise.resolve({ data: { sheets: tabs } });
             }
           ),
@@ -230,7 +254,9 @@ describe("fetchAllSheets", () => {
     const client: SheetsClient = {
       spreadsheets: {
         get: vi.fn().mockResolvedValue({
-          data: { sheets: [{ properties: { title: "Tab With Spaces" } }] },
+          data: {
+            sheets: [{ properties: { title: "Tab With Spaces", sheetId: 0 } }],
+          },
         }),
         values: { get: valuesGet },
       },
@@ -254,10 +280,38 @@ describe("fetchAllSheets", () => {
         get: vi.fn().mockResolvedValue({
           data: {
             sheets: [
-              { properties: { title: "Valid" } },
-              { properties: { title: null } },
-              { properties: {} },
+              { properties: { title: "Valid", sheetId: 1 } },
+              { properties: { title: null, sheetId: 2 } },
+              { properties: { sheetId: 3 } },
               {},
+            ],
+          },
+        }),
+        values: {
+          get: vi.fn().mockResolvedValue({
+            data: { values: [["Name", "Total"], ["X", "1"]] },
+          }),
+        },
+      },
+    };
+
+    const config: Config = {
+      sheets: [{ id: "sheet-123", label: "Test" }],
+    };
+
+    const results = await fetchAllSheets(client, config);
+    expect(Object.keys(results[0].games)).toEqual(["Valid"]);
+  });
+
+  it("skips tabs with no sheetId", async () => {
+    const client: SheetsClient = {
+      spreadsheets: {
+        get: vi.fn().mockResolvedValue({
+          data: {
+            sheets: [
+              { properties: { title: "Valid", sheetId: 0 } },
+              { properties: { title: "No Id", sheetId: null } },
+              { properties: { title: "Missing Id" } },
             ],
           },
         }),

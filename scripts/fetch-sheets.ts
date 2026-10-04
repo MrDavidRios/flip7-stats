@@ -20,9 +20,14 @@ export interface TabData {
   rows: string[][];
 }
 
+export interface GameTab extends TabData {
+  gid: number;
+}
+
 export interface SpreadsheetData {
+  id: string;
   label: string;
-  games: Record<string, TabData>;
+  games: Record<string, GameTab>;
 }
 
 export interface FetchResult {
@@ -33,7 +38,11 @@ export interface FetchResult {
 export interface SheetsClient {
   spreadsheets: {
     get: (params: { spreadsheetId: string; fields: string }) => Promise<{
-      data: { sheets?: { properties?: { title?: string | null } }[] };
+      data: {
+        sheets?: {
+          properties?: { title?: string | null; sheetId?: number | null };
+        }[];
+      };
     }>;
     values: {
       get: (params: { spreadsheetId: string; range: string }) => Promise<{
@@ -92,26 +101,29 @@ export async function fetchAllSheets(
   for (const spreadsheet of config.sheets) {
     const meta = await sheetsApi.spreadsheets.get({
       spreadsheetId: spreadsheet.id,
-      fields: "sheets.properties.title",
+      fields: "sheets.properties(title,sheetId)",
     });
 
-    const tabNames =
+    const tabs =
       meta.data.sheets
-        ?.map((s) => s.properties?.title)
-        .filter((t): t is string => t != null) ?? [];
+        ?.map((s) => ({ title: s.properties?.title, gid: s.properties?.sheetId }))
+        .filter(
+          (t): t is { title: string; gid: number } =>
+            t.title != null && t.gid != null
+        ) ?? [];
 
-    const games: Record<string, TabData> = {};
+    const games: Record<string, GameTab> = {};
 
-    for (const tabName of tabNames) {
+    for (const { title: tabName, gid } of tabs) {
       const response = await sheetsApi.spreadsheets.values.get({
         spreadsheetId: spreadsheet.id,
         range: `'${tabName}'`,
       });
 
-      games[tabName] = parseTabData(response.data.values ?? []);
+      games[tabName] = { gid, ...parseTabData(response.data.values ?? []) };
     }
 
-    results.push({ label: spreadsheet.label, games });
+    results.push({ id: spreadsheet.id, label: spreadsheet.label, games });
   }
 
   return results;
