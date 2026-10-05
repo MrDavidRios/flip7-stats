@@ -5,7 +5,9 @@ import {
   getGameDates,
   getGameDetail,
   getPlayerGameDetails,
+  getRoundsDistribution,
   playerRows,
+  roundCount,
   type Data,
 } from "./data"
 
@@ -123,5 +125,50 @@ describe("getPlayerGameDetails", () => {
 describe("gamePath", () => {
   it("builds the game route from spreadsheet id and gid", () => {
     expect(gamePath("sheet-david", 555)).toBe("/games/sheet-david/555")
+  })
+})
+
+describe("roundCount", () => {
+  it("counts up to the last round anyone scored in, ignoring blank trailing columns", () => {
+    expect(
+      roundCount({
+        headers: ["Player", "Total", "Round 1", "Round 2", "Round 3", "Round 4"],
+        rows: [
+          ["Alice", "10", "0", "", "10", ""],
+          ["Bob", "7", "7", "", ""],
+        ],
+      })
+    ).toBe(3)
+  })
+
+  it("skips note rows and tabs without rounds", () => {
+    expect(
+      roundCount({
+        headers: ["Player", "Total", "Round 1", "Round 2"],
+        rows: [["Alice", "5", "5", ""], ["Note: x", "", "", "y"]],
+      })
+    ).toBe(1)
+    expect(roundCount({ headers: ["Player", "Total"], rows: [["Alice", "5"]] })).toBe(0)
+  })
+})
+
+describe("getRoundsDistribution", () => {
+  it("buckets games by round count, filling gaps between min and max", () => {
+    const tab = (rounds: number) => ({
+      gid: rounds,
+      headers: ["Player", "Total", ...Array.from({ length: rounds }, (_, i) => `Round ${i + 1}`)],
+      rows: [["Alice", "1", ...Array(rounds).fill("1")]],
+    })
+    const data: Data = {
+      fetchedAt: "",
+      spreadsheets: [
+        { id: "s", label: "S", games: { a: tab(3), b: tab(5), c: tab(5), d: { gid: 9, headers: [], rows: [] } } },
+      ],
+    }
+    expect(getRoundsDistribution(data)).toEqual([
+      { rounds: 3, games: 1 },
+      { rounds: 4, games: 0 },
+      { rounds: 5, games: 2 },
+    ])
   })
 })

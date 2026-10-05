@@ -2,8 +2,8 @@ import { useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 import { ChevronRight } from "lucide-react"
 import { motion, MotionConfig, type Transition } from "motion/react"
+import { SegmentedControl } from "@/components/SegmentedControl"
 import type { PlayerSummary } from "@/lib/data"
-import { cn } from "@/lib/utils"
 
 type SortKey = "totalScore" | "avgScore" | "gamesPlayed"
 
@@ -46,28 +46,13 @@ export function PlayersTab({ players }: PlayersTabProps) {
           <span id="rank-by" className="text-sm text-foreground/70">
             Rank by
           </span>
-          <div
-            role="group"
+          <SegmentedControl
             aria-labelledby="rank-by"
-            className="flex h-11 flex-1 rounded-lg bg-muted p-[3px] md:h-8 md:flex-none"
-          >
-            {SORTS.map((s) => (
-              <button
-                key={s.key}
-                type="button"
-                aria-pressed={s.key === sortKey}
-                onClick={() => setSortKey(s.key)}
-                className={cn(
-                  "flex-1 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors",
-                  s.key === sortKey
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-foreground/60 hover:text-foreground"
-                )}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
+            className="h-11 flex-1 *:flex-1 md:h-8 md:flex-none"
+            options={SORTS.map((s) => ({ value: s.key, label: s.label }))}
+            value={sortKey}
+            onChange={setSortKey}
+          />
         </div>
 
         <ol className="divide-y divide-foreground/10 rounded-lg border border-foreground/10 bg-card">
