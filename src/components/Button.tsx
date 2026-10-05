@@ -1,4 +1,5 @@
-import { Button as ShadcnButton, type buttonVariants } from "@/components/ui/button"
+import { Button as ShadcnButton } from "@/components/ui/button"
+import type { buttonVariants } from "@/components/ui/button-variants"
 import type { VariantProps } from "class-variance-authority"
 import type { ComponentProps } from "react"
 

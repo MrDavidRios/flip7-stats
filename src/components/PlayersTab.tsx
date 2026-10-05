@@ -2,8 +2,8 @@ import { useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 import { ChevronRight } from "lucide-react"
 import { motion, MotionConfig, type Transition } from "motion/react"
-import type { PlayerSummary } from "@/lib/data"
-import { cn } from "@/lib/utils"
+import { SegmentedControl } from "@/components/SegmentedControl"
+import { getPlayerBadges, type PlayerSummary } from "@/lib/data"
 
 type SortKey = "totalScore" | "avgScore" | "gamesPlayed"
 
@@ -37,6 +37,8 @@ export function PlayersTab({ players }: PlayersTabProps) {
     [players, sortKey]
   )
 
+  const badges = useMemo(() => getPlayerBadges(players), [players])
+
   const sort = SORTS.find((s) => s.key === sortKey)!
 
   return (
@@ -46,28 +48,13 @@ export function PlayersTab({ players }: PlayersTabProps) {
           <span id="rank-by" className="text-sm text-foreground/70">
             Rank by
           </span>
-          <div
-            role="group"
+          <SegmentedControl
             aria-labelledby="rank-by"
-            className="flex h-11 flex-1 rounded-lg bg-muted p-[3px] md:h-8 md:flex-none"
-          >
-            {SORTS.map((s) => (
-              <button
-                key={s.key}
-                type="button"
-                aria-pressed={s.key === sortKey}
-                onClick={() => setSortKey(s.key)}
-                className={cn(
-                  "flex-1 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors",
-                  s.key === sortKey
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-foreground/60 hover:text-foreground"
-                )}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
+            className="h-11 flex-1 *:flex-1 md:h-8 md:flex-none"
+            options={SORTS.map((s) => ({ value: s.key, label: s.label }))}
+            value={sortKey}
+            onChange={setSortKey}
+          />
         </div>
 
         <ol className="divide-y divide-foreground/10 rounded-lg border border-foreground/10 bg-card">
@@ -85,6 +72,18 @@ export function PlayersTab({ players }: PlayersTabProps) {
                   {i + 1}
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col">
+                  {badges.has(player.name) && (
+                    <span className="mb-1 flex flex-wrap gap-1">
+                      {badges.get(player.name)!.map((badge) => (
+                        <span
+                          key={badge.key}
+                          className="rounded-full bg-muted px-2 py-0.5 text-[11px] leading-none font-medium text-foreground/80 tabular-nums"
+                        >
+                          {badge.label} · {player[badge.key]}
+                        </span>
+                      ))}
+                    </span>
+                  )}
                   <span className="truncate font-medium">{player.name}</span>
                   <span className="text-xs text-foreground/70 tabular-nums">
                     {SORTS.filter((s) => s.key !== sortKey)
