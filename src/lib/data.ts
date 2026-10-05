@@ -25,6 +25,10 @@ export interface PlayerSummary {
   gamesPlayed: number
   totalScore: number
   avgScore: number
+  /** Games finished in 2nd place. */
+  secondPlaces: number
+  /** Games finished last (only counted in games with 2+ players). */
+  lastPlaces: number
 }
 
 export interface GameSummary {
@@ -107,16 +111,23 @@ export function parseDateFromName(name: string): Date | null {
 }
 
 export function getAllPlayers(data: Data): PlayerSummary[] {
-  const map = new Map<string, { gamesPlayed: number; totalScore: number }>()
+  const map = new Map<
+    string,
+    { gamesPlayed: number; totalScore: number; secondPlaces: number; lastPlaces: number }
+  >()
 
   for (const spreadsheet of data.spreadsheets) {
     for (const tab of Object.values(spreadsheet.games)) {
-      for (const { name, score } of playerRows(tab)) {
-        const existing = map.get(name) ?? { gamesPlayed: 0, totalScore: 0 }
+      const ranked = playerRows(tab).sort((a, b) => b.score - a.score)
+      ranked.forEach(({ name, score }, i) => {
+        const existing =
+          map.get(name) ?? { gamesPlayed: 0, totalScore: 0, secondPlaces: 0, lastPlaces: 0 }
         existing.gamesPlayed += 1
         existing.totalScore += score
+        if (i === 1) existing.secondPlaces += 1
+        if (ranked.length > 1 && i === ranked.length - 1) existing.lastPlaces += 1
         map.set(name, existing)
-      }
+      })
     }
   }
 
@@ -127,6 +138,27 @@ export function getAllPlayers(data: Data): PlayerSummary[] {
       avgScore: stats.gamesPlayed > 0 ? stats.totalScore / stats.gamesPlayed : 0,
     }))
     .sort((a, b) => b.totalScore - a.totalScore)
+}
+
+export const PLAYER_BADGES = [
+  { key: "lastPlaces", label: "Most last places" },
+  { key: "secondPlaces", label: "Most 2nd places" },
+] as const
+
+export type PlayerBadge = (typeof PLAYER_BADGES)[number]
+
+/** Badges each player holds; ties all get the badge, and a count of 0 earns nothing. */
+export function getPlayerBadges(players: PlayerSummary[]): Map<string, PlayerBadge[]> {
+  const badges = new Map<string, PlayerBadge[]>()
+  for (const badge of PLAYER_BADGES) {
+    const most = Math.max(0, ...players.map((p) => p[badge.key]))
+    if (most === 0) continue
+    for (const player of players) {
+      if (player[badge.key] !== most) continue
+      badges.set(player.name, [...(badges.get(player.name) ?? []), badge])
+    }
+  }
+  return badges
 }
 
 export interface PlayerGameDetail {

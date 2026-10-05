@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import { ChevronRight } from "lucide-react"
 import { motion, MotionConfig, type Transition } from "motion/react"
 import { SegmentedControl } from "@/components/SegmentedControl"
-import type { PlayerSummary } from "@/lib/data"
+import { getPlayerBadges, type PlayerSummary } from "@/lib/data"
 
 type SortKey = "totalScore" | "avgScore" | "gamesPlayed"
 
@@ -36,6 +36,8 @@ export function PlayersTab({ players }: PlayersTabProps) {
       ),
     [players, sortKey]
   )
+
+  const badges = useMemo(() => getPlayerBadges(players), [players])
 
   const sort = SORTS.find((s) => s.key === sortKey)!
 
@@ -70,6 +72,18 @@ export function PlayersTab({ players }: PlayersTabProps) {
                   {i + 1}
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col">
+                  {badges.has(player.name) && (
+                    <span className="mb-1 flex flex-wrap gap-1">
+                      {badges.get(player.name)!.map((badge) => (
+                        <span
+                          key={badge.key}
+                          className="rounded-full bg-muted px-2 py-0.5 text-[11px] leading-none font-medium text-foreground/80 tabular-nums"
+                        >
+                          {badge.label} · {player[badge.key]}
+                        </span>
+                      ))}
+                    </span>
+                  )}
                   <span className="truncate font-medium">{player.name}</span>
                   <span className="text-xs text-foreground/70 tabular-nums">
                     {SORTS.filter((s) => s.key !== sortKey)

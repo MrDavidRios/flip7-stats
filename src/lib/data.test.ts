@@ -4,6 +4,7 @@ import {
   getAllPlayers,
   getGameDates,
   getGameDetail,
+  getPlayerBadges,
   getPlayerGameDetails,
   getRoundsDistribution,
   playerRows,
@@ -48,11 +49,52 @@ describe("getAllPlayers", () => {
   it("returns unique players across all spreadsheets with game counts and total scores", () => {
     const players = getAllPlayers(sampleData)
     expect(players).toEqual([
-      { name: "Alice", gamesPlayed: 2, totalScore: 15, avgScore: 7.5 },
-      { name: "Charlie", gamesPlayed: 1, totalScore: 12, avgScore: 12 },
-      { name: "Bob", gamesPlayed: 2, totalScore: 10, avgScore: 5 },
-      { name: "Diana", gamesPlayed: 1, totalScore: 9, avgScore: 9 },
+      { name: "Alice", gamesPlayed: 2, totalScore: 15, avgScore: 7.5, secondPlaces: 1, lastPlaces: 1 },
+      { name: "Charlie", gamesPlayed: 1, totalScore: 12, avgScore: 12, secondPlaces: 0, lastPlaces: 0 },
+      { name: "Bob", gamesPlayed: 2, totalScore: 10, avgScore: 5, secondPlaces: 2, lastPlaces: 2 },
+      { name: "Diana", gamesPlayed: 1, totalScore: 9, avgScore: 9, secondPlaces: 0, lastPlaces: 0 },
     ])
+  })
+
+  it("counts 2nd and last places separately in games with 3+ players", () => {
+    const players = getAllPlayers({
+      fetchedAt: "",
+      spreadsheets: [
+        {
+          id: "s",
+          label: "s",
+          games: {
+            "Game 1": { gid: 0, headers: ["Player", "Total"], rows: [["A", "30"], ["B", "20"], ["C", "10"]] },
+            "Solo": { gid: 1, headers: ["Player", "Total"], rows: [["C", "5"]] },
+          },
+        },
+      ],
+    })
+    const byName = Object.fromEntries(players.map((p) => [p.name, p]))
+    expect(byName.B).toMatchObject({ secondPlaces: 1, lastPlaces: 0 })
+    expect(byName.C).toMatchObject({ secondPlaces: 0, lastPlaces: 1 })
+  })
+})
+
+describe("getPlayerBadges", () => {
+  const player = (name: string, secondPlaces: number, lastPlaces: number) => ({
+    name,
+    gamesPlayed: 1,
+    totalScore: 0,
+    avgScore: 0,
+    secondPlaces,
+    lastPlaces,
+  })
+
+  it("gives each badge to every player tied for the most", () => {
+    const badges = getPlayerBadges([player("A", 3, 1), player("B", 3, 4), player("C", 0, 2)])
+    expect(badges.get("A")?.map((b) => b.label)).toEqual(["Most 2nd places"])
+    expect(badges.get("B")?.map((b) => b.label)).toEqual(["Most last places", "Most 2nd places"])
+    expect(badges.has("C")).toBe(false)
+  })
+
+  it("awards nothing when no one has the stat", () => {
+    expect(getPlayerBadges([player("A", 0, 0)]).size).toBe(0)
   })
 })
 
